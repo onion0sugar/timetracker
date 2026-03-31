@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Kontrolny - Śledzenie Czasu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Dashboard Access Login Overlay -->
+    <div id="accessOverlay" class="access-overlay">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 0.5rem;">Dostęp do Panelu</h2>
+            <p>Aby kontynuować, podaj hasło dostępu:</p>
+            <input type="password" id="viewPasswordInput" placeholder="Hasło dostępu...">
+            <button id="confirmViewBtn" style="width: 100%;">Wejdź</button>
+        </div>
+    </div>
+
+    <div id="mainContainer" class="container" style="display: none;">
+        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+            <h1>Dashboard</h1>
+            <button id="adminLoginBtn" class="btn-secondary" style="margin-bottom: 0;">Zaloguj do serwisu</button>
+            <button id="adminLogoutBtn" class="btn-secondary admin-only"
+                style="margin-bottom: 0; background: rgba(235, 77, 75, 0.2); color: #eb4d4b;">Wyloguj</button>
+        </header>
+
+        <div class="form-group admin-only">
+            <input type="text" id="userNameInput" placeholder="Imię i nazwisko użytkownika...">
+            <button onclick="addUser()">Dodaj Użytkownika</button>
+        </div>
+
+        <div id="userGrid" class="user-grid">
+            <!-- User cards will be loaded here -->
+        </div>
+    </div>
+    <!-- Admin Login Modal -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h3>Logowanie serwisowe</h3>
+            <p>Podaj hasło, aby uzyskać dostęp do funkcji administratora:</p>
+            <input type="password" id="adminPasswordInput" placeholder="Hasło...">
+            <div class="modal-actions">
+                <button id="confirmLoginBtn" class="btn-danger">Zaloguj</button>
+                <button id="cancelLoginBtn" class="btn-secondary">Anuluj</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sse-status">Połączenie utracone - próba odnowienia...</div>
+    <div id="toast-container"></div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>

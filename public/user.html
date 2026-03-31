@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Twój Przełącznik - Śledzenie Czasu</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="container switch-view">
+        <h1 id="userNameHeading">Ładowanie...</h1>
+
+        <div class="switch-container">
+            <div id="timer" class="timer-display">00:00:00</div>
+
+            <div class="switch-rack">
+                <div id="slider" class="switch-slider pos0"></div>
+                <div class="switch-option" onclick="setPos(0, 'OFF')">OFF</div>
+                <div class="switch-option" onclick="setPos(1, 'Pakowanie')">Pakowanie</div>
+                <div class="switch-option" onclick="setPos(2, 'Zbieranie')">Zbieranie</div>
+                <div class="switch-option" onclick="setPos(3, 'Przerwa')">Przerwa</div>
+                <div class="switch-option" onclick="setPos(4, 'Inne')">Inne</div>
+            </div>
+
+            <div id="currentStateName" style="font-size: 1.2rem; font-weight: 600; color: rgba(255,255,255,0.7)">
+                Stan: OFF
+            </div>
+        </div>
+
+        <div style="margin-top: 3rem;">
+            <h3>Ostatnie aktywności</h3>
+            <div id="logHistory" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                <!-- Logs will be loaded here -->
+            </div>
+        </div>
+    </div>
+    <div id="sse-status">Połączenie utracone - próba odnowienia...</div>
+    <div id="toast-container"></div>
+
+    <script src="app.js"></script>
+    <script>
+        // Specific logic for user.html
+        window.addEventListener('load', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const userId = urlParams.get('id');
+            if (userId) {
+                startUserRefresh(userId);
+            }
+        });
+    </script>
+</body>
+
+</html>

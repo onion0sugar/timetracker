@@ -1,0 +1,18 @@
+{
+    "name": "user-switch-activity-tracker",
+    "version": "1.0.0",
+    "description": "Activity tracker with 4-position switch",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js",
+        "dev": "node --watch server.js"
+    },
+    "dependencies": {
+        "compression": "^1.8.1",
+        "cors": "^2.8.5",
+        "dotenv": "^17.3.1",
+        "express": "^4.18.2",
+        "mysql2": "^3.11.0",
+        "uuid": "^9.0.1"
+    }
+}
