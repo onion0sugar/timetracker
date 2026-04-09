@@ -81,11 +81,11 @@ async function fetchUsers() {
                         ${statsHtml}
                     </div>
                     
-                    <div class="admin-only" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
-                        <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8;">
+                    <div class="admin-only" style="display: flex !important; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+                        <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8; font-size: 0.85rem;">
                             🔗 Link
                         </div>
-                        <button class="delete-user-btn" data-id="${user.id}" style="padding: 4px 10px; background: rgba(235, 77, 75, 0.15); color: #eb4d4b; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(235, 77, 75, 0.2); cursor: pointer;">USUŃ</button>
+                        <button class="delete-user-btn" data-id="${user.id}" style="padding: 6px 12px; background: rgba(235, 77, 75, 0.1); color: #eb4d4b; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(235, 77, 75, 0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
                     </div>
                 </div>
             `;
