@@ -395,12 +395,12 @@ function renderLogs(logs) {
 // --- Rotary Knob ---
 
 const KNOB_POS_DATA = [
-    { pos: 0, state: 'OFF',         angle: 0   },
-    { pos: 1, state: 'Przerwa',     angle: 60  },
-    { pos: 2, state: 'Zbieranie',   angle: 120 },
-    { pos: 3, state: 'Pakowanie',   angle: 180 },
-    { pos: 4, state: 'Rozkładanie', angle: 240 },
-    { pos: 5, state: 'Inne',        angle: 300 }
+    { pos: 0, state: 'OFF',         angle: 30  },
+    { pos: 1, state: 'Przerwa',     angle: 90  },
+    { pos: 2, state: 'Zbieranie',   angle: 150 },
+    { pos: 3, state: 'Pakowanie',   angle: 210 },
+    { pos: 4, state: 'Rozkładanie', angle: 270 },
+    { pos: 5, state: 'Inne',        angle: 330 }
 ];
 
 function updateKnob(pos, state) {
