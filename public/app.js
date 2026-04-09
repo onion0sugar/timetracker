@@ -285,7 +285,7 @@ async function initUserSwitch(id) {
         // Find most recent active log
         const latest = data.logs[0];
         if (latest && !latest.end_time) {
-            const positions = { 'OFF': 0, 'Pakowanie': 1, 'Zbieranie': 2, 'Przerwa': 3, 'Rozkladanie': 4, 'Inne': 4 };
+            const positions = { 'OFF': 0, 'Pakowanie': 1, 'Zbieranie': 2, 'Przerwa': 3, 'Rozkładanie': 4, 'Inne': 4 };
             setUI(positions[latest.state], latest.state, false);
             startTimer(new Date(latest.start_time));
         } else {
@@ -399,7 +399,7 @@ const KNOB_POS_DATA = [
     { pos: 1, state: 'Pakowanie',   angle: 72  },
     { pos: 2, state: 'Zbieranie',   angle: 144 },
     { pos: 3, state: 'Przerwa',     angle: 216 },
-    { pos: 4, state: 'Rozkladanie', angle: 288 }
+    { pos: 4, state: 'Rozkładanie', angle: 288 }
 ];
 
 function updateKnob(pos, state) {
