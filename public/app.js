@@ -69,20 +69,23 @@ async function fetchUsers() {
                 : '<div style="opacity: 0.5;">Brak aktywności dzisiaj</div>';
 
             return `
-                <div class="user-card" style="position: relative;">
-                    <button class="delete-user-btn admin-only" data-id="${user.id}" style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; background: rgba(235, 77, 75, 0.2); color: #eb4d4b; border-radius: 8px; font-size: 0.8rem; border: none; cursor: pointer;">USUŃ</button>
+                <div class="user-card" style="display: flex; flex-direction: column;">
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
                         <h3 style="margin: 0; font-size: 1.2rem;">${user.name}</h3>
                         <span class="status-badge status-${stateClass}" style="margin: 0;">
                             ${user.current_state || 'OFF'}
                         </span>
                     </div>
-                    <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                    <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem; flex-grow: 1;">
                         <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Dzisiaj:</div>
                         ${statsHtml}
                     </div>
-                    <div class="copy-link admin-only" data-id="${user.id}">
-                        🔗 Kopiuj link dla użytkownika
+                    
+                    <div class="admin-only" style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05);">
+                        <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8;">
+                            🔗 Link
+                        </div>
+                        <button class="delete-user-btn" data-id="${user.id}" style="padding: 4px 10px; background: rgba(235, 77, 75, 0.15); color: #eb4d4b; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(235, 77, 75, 0.2); cursor: pointer;">USUŃ</button>
                     </div>
                 </div>
             `;
