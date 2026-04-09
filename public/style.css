@@ -262,22 +262,12 @@ button:hover {
 }
 
 .knob-label {
-    fill: rgba(255, 255, 255, 0.8);
-    font-size: 11px;
+    fill: rgba(255, 255, 255, 0.9);
+    font-size: 9px;
     font-weight: 700;
     font-family: 'Inter', system-ui, sans-serif;
     text-transform: uppercase;
-    letter-spacing: 0.4px;
-    pointer-events: none;
-}
-
-.knob-center-text {
-    fill: rgba(255, 255, 255, 0.95);
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Inter', system-ui, sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
     pointer-events: none;
 }
 
