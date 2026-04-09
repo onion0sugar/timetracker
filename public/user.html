@@ -27,40 +27,39 @@
             <!-- Mobile Rotary Knob -->
             <div class="knob-wrapper" id="knobWrapper">
                 <svg id="knobSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;touch-action:none;">
-                    <circle cx="150" cy="150" r="143" fill="rgba(0,0,0,0.3)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-                    <!-- Sectors -->
+                    <!-- Background -->
+                    <circle cx="150" cy="150" r="143" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
+                    <!-- Sectors (full pie from center) -->
                     <path class="knob-sector" data-pos="0" data-state="OFF"
-                          d="M 110.86 91.97 L 76.19 40.57 A 132 132 0 0 1 223.81 40.57 L 189.14 91.97 A 70 70 0 0 0 110.86 91.97 Z"
-                          fill="#95a5a6"/>
+                          d="M 150 150 L 76.19 40.57 A 132 132 0 0 1 223.81 40.57 Z"
+                          fill="#95a5a6" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
                     <path class="knob-sector" data-pos="1" data-state="Pakowanie"
-                          d="M 193.10 94.84 L 231.27 45.98 A 132 132 0 0 1 276.89 186.38 L 217.29 169.30 A 70 70 0 0 0 193.10 94.84 Z"
-                          fill="#3498db"/>
+                          d="M 150 150 L 231.27 45.98 A 132 132 0 0 1 276.89 186.38 Z"
+                          fill="#3498db" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
                     <path class="knob-sector" data-pos="2" data-state="Zbieranie"
-                          d="M 215.78 173.94 L 274.04 195.15 A 132 132 0 0 1 159.21 281.88 L 154.88 219.83 A 70 70 0 0 0 215.78 173.94 Z"
-                          fill="#f1c40f"/>
+                          d="M 150 150 L 274.04 195.15 A 132 132 0 0 1 159.21 281.88 Z"
+                          fill="#f1c40f" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
                     <path class="knob-sector" data-pos="3" data-state="Przerwa"
-                          d="M 147.56 219.96 L 145.39 281.92 A 132 132 0 0 1 25.96 195.15 L 84.22 173.94 A 70 70 0 0 0 147.56 219.96 Z"
-                          fill="#e67e22"/>
+                          d="M 150 150 L 145.39 281.92 A 132 132 0 0 1 25.96 195.15 Z"
+                          fill="#e67e22" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
                     <path class="knob-sector" data-pos="4" data-state="Rozkladanie"
-                          d="M 82.71 169.30 L 23.11 186.38 A 132 132 0 0 1 68.73 45.98 L 106.90 94.84 A 70 70 0 0 0 82.71 169.30 Z"
-                          fill="#9b59b6"/>
+                          d="M 150 150 L 23.11 186.38 A 132 132 0 0 1 68.73 45.98 Z"
+                          fill="#9b59b6" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
                     <!-- Outer ring -->
                     <circle cx="150" cy="150" r="133" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-                    <!-- Labels -->
-                    <text x="150" y="48" class="knob-label" text-anchor="middle" dominant-baseline="middle">OFF</text>
-                    <text x="249" y="118" class="knob-label" text-anchor="middle" dominant-baseline="middle">Pak.</text>
-                    <text x="210" y="233" class="knob-label" text-anchor="middle" dominant-baseline="middle">Zbier.</text>
-                    <text x="90"  y="233" class="knob-label" text-anchor="middle" dominant-baseline="middle">Prz.</text>
-                    <text x="51"  y="118" class="knob-label" text-anchor="middle" dominant-baseline="middle">Rozk.</text>
-                    <!-- Center circle -->
-                    <circle id="knobCenterCircle" cx="150" cy="150" r="68" fill="rgba(19,15,64,0.92)" stroke="rgba(255,255,255,0.25)" stroke-width="2"/>
-                    <!-- Needle -->
-                    <g id="knobNeedle" style="transform-origin:150px 150px;transform:rotate(0deg);transition:transform 0.45s cubic-bezier(0.34,1.56,0.64,1)">
-                        <polygon points="150,95 145,150 155,150" fill="white" opacity="0.95"/>
-                        <circle cx="150" cy="150" r="7" fill="white"/>
-                    </g>
-                    <!-- Center label -->
-                    <text id="knobStateText" x="150" y="162" text-anchor="middle" dominant-baseline="middle" class="knob-center-text">OFF</text>
+                    <!-- Labels: radially from center, tilted to match sector angle -->
+                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                          transform="translate(150,150) rotate(0)   translate(0,-82)">OFF</text>
+                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                          transform="translate(150,150) rotate(72)  translate(0,-82)">Pakowanie</text>
+                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                          transform="translate(150,150) rotate(144) translate(0,-82)">Zbieranie</text>
+                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                          transform="translate(150,150) rotate(216) translate(0,-82)">Przerwa</text>
+                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                          transform="translate(150,150) rotate(288) translate(0,-82)">Rozkladanie</text>
+                    <!-- Center pivot dot -->
+                    <circle cx="150" cy="150" r="7" fill="rgba(255,255,255,0.9)" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
                 </svg>
             </div>
 

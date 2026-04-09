@@ -403,14 +403,8 @@ const KNOB_POS_DATA = [
 ];
 
 function updateKnob(pos, state) {
-    const needle   = document.getElementById('knobNeedle');
-    const label    = document.getElementById('knobStateText');
-    const sectors  = document.querySelectorAll('.knob-sector');
-    if (!needle) return;
-
-    const kp = KNOB_POS_DATA[pos] || KNOB_POS_DATA[0];
-    needle.style.transform = `rotate(${kp.angle}deg)`;
-    if (label) label.textContent = state;
+    const sectors = document.querySelectorAll('.knob-sector');
+    if (!sectors.length) return;
 
     sectors.forEach((s, i) => {
         s.classList.toggle('active', i === pos);
