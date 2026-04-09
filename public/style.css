@@ -444,3 +444,94 @@ body.admin-mode #adminLoginBtn {
 #sse-status.visible {
     display: block;
 }
+
+/* ── Responsive Design ──────────────────────────────────── */
+
+/* Standard Mobile & Tablets */
+@media (max-width: 768px) {
+    .container {
+        width: calc(100% - 20px);
+        margin: 10px;
+        padding: 1.5rem;
+        border-radius: 16px;
+    }
+
+    .switch-rack {
+        width: 100%;
+        max-width: 600px;
+        height: 70px;
+    }
+
+    .timer-display {
+        font-size: 3rem;
+    }
+
+    .user-grid {
+        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+        gap: 1rem;
+    }
+
+    .form-group {
+        gap: 0.75rem;
+    }
+}
+
+/* Zebra MC330x & Small Phones (approx 480px and below) */
+@media (max-width: 480px) {
+    .container {
+        padding: 1rem;
+        margin: 5px;
+        width: calc(100% - 10px);
+    }
+
+    h1 {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .timer-display {
+        font-size: 2.2rem;
+    }
+
+    .switch-rack {
+        height: 54px;
+        padding: 4px;
+        border-radius: 30px;
+    }
+
+    .switch-option {
+        font-size: 0.6rem;
+        font-weight: 700;
+        letter-spacing: -0.3px;
+        padding: 0 2px;
+    }
+
+    .switch-slider {
+        top: 4px;
+        left: 4px;
+        height: calc(100% - 8px);
+        width: calc(20% - 2px);
+        border-radius: 26px;
+    }
+
+    .form-group {
+        flex-direction: column;
+    }
+
+    .modal-content {
+        padding: 1.5rem;
+        width: 95%;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+    }
+
+    .modal-actions button {
+        width: 100%;
+    }
+
+    #currentStateName {
+        font-size: 1rem !important;
+    }
+}
