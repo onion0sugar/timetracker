@@ -2,94 +2,104 @@
 <html lang="pl">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twój Przełącznik - Śledzenie Czasu</title>
-    <link rel="stylesheet" href="style.css">
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Twój Przełącznik - Śledzenie Czasu</title>
+      <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
-    <div class="container switch-view">
-        <h1 id="userNameHeading">Ładowanie...</h1>
+      <div class="container switch-view">
+            <h1 id="userNameHeading">Ładowanie...</h1>
 
-        <div class="switch-container">
-            <div id="timer" class="timer-display">00:00:00</div>
+            <div class="switch-container">
+                  <div id="timer" class="timer-display">00:00:00</div>
 
-            <div class="switch-rack">
-                <div id="slider" class="switch-slider pos0"></div>
-                <div class="switch-option" onclick="setPos(0, 'OFF')">OFF</div>
-                <div class="switch-option" onclick="setPos(1, 'Pakowanie')">Pakowanie</div>
-                <div class="switch-option" onclick="setPos(2, 'Zbieranie')">Zbieranie</div>
-                <div class="switch-option" onclick="setPos(3, 'Przerwa')">Przerwa</div>
-                <div class="switch-option" onclick="setPos(4, 'Rozkładanie')">Rozkładanie</div>
+                  <div class="switch-rack">
+                        <div id="slider" class="switch-slider pos0"></div>
+                        <div class="switch-option" onclick="setPos(0, 'OFF')">OFF</div>
+                        <div class="switch-option" onclick="setPos(1, 'Przerwa')">Przerwa</div>
+                        <div class="switch-option" onclick="setPos(2, 'Zbieranie')">Zbieranie</div>
+                        <div class="switch-option" onclick="setPos(3, 'Pakowanie')">Pakowanie</div>
+                        <div class="switch-option" onclick="setPos(4, 'Rozkładanie')">Rozkładanie</div>
+                        <div class="switch-option" onclick="setPos(5, 'Inne')">Inne</div>
+                  </div>
+
+                  <!-- Mobile Rotary Knob -->
+                  <div class="knob-wrapper" id="knobWrapper">
+                        <svg id="knobSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg"
+                              style="width:100%;height:auto;touch-action:none;">
+                              <!-- Background -->
+                              <circle cx="150" cy="150" r="143" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.08)"
+                                    stroke-width="1" />
+                              <!-- Sectors (full pie from center - 6 sectors) -->
+                              <path class="knob-sector" data-pos="0" data-state="OFF"
+                                    d="M 150 150 L 150 18 A 132 132 0 0 1 264.3 84 Z" fill="#95a5a6"
+                                    stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round" />
+                              <path class="knob-sector" data-pos="1" data-state="Przerwa"
+                                    d="M 150 150 L 264.3 84 A 132 132 0 0 1 264.3 216 Z" fill="#e67e22"
+                                    stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round" />
+                              <path class="knob-sector" data-pos="2" data-state="Zbieranie"
+                                    d="M 150 150 L 264.3 216 A 132 132 0 0 1 150 282 Z" fill="#2ecc71"
+                                    stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round" />
+                              <path class="knob-sector" data-pos="3" data-state="Pakowanie"
+                                    d="M 150 150 L 150 282 A 132 132 0 0 1 35.7 216 Z" fill="#3498db"
+                                    stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round" />
+                              <path class="knob-sector" data-pos="4" data-state="Rozkładanie"
+                                    d="M 150 150 L 35.7 216 A 132 132 0 0 1 35.7 84 Z" fill="#9b59b6"
+                                    stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round" />
+                              <path class="knob-sector" data-pos="5" data-state="Inne"
+                                    d="M 150 150 L 35.7 84 A 132 132 0 0 1 150 18 Z" fill="#f1c40f"
+                                    stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round" />
+                              <!-- Outer ring -->
+                              <circle cx="150" cy="150" r="133" fill="none" stroke="rgba(255,255,255,0.2)"
+                                    stroke-width="2" />
+                              <!-- Labels: radially from center - updated for 6 positions -->
+                              <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                                    transform="translate(150,150) rotate(30)   translate(0,-105)">OFF</text>
+                              <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                                    transform="translate(150,150) rotate(90)  translate(0,-105)">Przerwa</text>
+                              <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                                    transform="translate(150,150) rotate(150) translate(0,-105)">Zbieranie</text>
+                              <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                                    transform="translate(150,150) rotate(210) translate(0,-105)">Pakowanie</text>
+                              <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                                    transform="translate(150,150) rotate(270) translate(0,-105)">Rozkładanie</text>
+                              <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
+                                    transform="translate(150,150) rotate(330) translate(0,-105)">Inne</text>
+                              <!-- Center pivot dot -->
+                              <circle cx="150" cy="150" r="7" fill="rgba(255,255,255,0.9)" stroke="rgba(0,0,0,0.3)"
+                                    stroke-width="1.5" />
+                        </svg>
+                  </div>
+
+                  <div id="currentStateName" style="font-size: 1.2rem; font-weight: 600; color: rgba(255,255,255,0.7)">
+                        Stan: OFF
+                  </div>
             </div>
 
-            <!-- Mobile Rotary Knob -->
-            <div class="knob-wrapper" id="knobWrapper">
-                <svg id="knobSvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;touch-action:none;">
-                    <!-- Background -->
-                    <circle cx="150" cy="150" r="143" fill="rgba(0,0,0,0.35)" stroke="rgba(255,255,255,0.08)" stroke-width="1"/>
-                    <!-- Sectors (full pie from center) -->
-                    <path class="knob-sector" data-pos="0" data-state="OFF"
-                          d="M 150 150 L 76.19 40.57 A 132 132 0 0 1 223.81 40.57 Z"
-                          fill="#95a5a6" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
-                    <path class="knob-sector" data-pos="1" data-state="Pakowanie"
-                          d="M 150 150 L 231.27 45.98 A 132 132 0 0 1 276.89 186.38 Z"
-                          fill="#3498db" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
-                    <path class="knob-sector" data-pos="2" data-state="Zbieranie"
-                          d="M 150 150 L 274.04 195.15 A 132 132 0 0 1 159.21 281.88 Z"
-                          fill="#f1c40f" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
-                    <path class="knob-sector" data-pos="3" data-state="Przerwa"
-                          d="M 150 150 L 145.39 281.92 A 132 132 0 0 1 25.96 195.15 Z"
-                          fill="#e67e22" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
-                    <path class="knob-sector" data-pos="4" data-state="Rozkładanie"
-                          d="M 150 150 L 23.11 186.38 A 132 132 0 0 1 68.73 45.98 Z"
-                          fill="#9b59b6" stroke="rgba(10,8,40,0.8)" stroke-width="3" stroke-linejoin="round"/>
-                    <!-- Outer ring -->
-                    <circle cx="150" cy="150" r="133" fill="none" stroke="rgba(255,255,255,0.2)" stroke-width="2"/>
-                    <!-- Labels: radially from center, tilted to match sector angle -->
-                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
-                          transform="translate(150,150) rotate(0)   translate(0,-105)">OFF</text>
-                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
-                          transform="translate(150,150) rotate(72)  translate(0,-105)">Pakowanie</text>
-                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
-                          transform="translate(150,150) rotate(144) translate(0,-105)">Zbieranie</text>
-                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
-                          transform="translate(150,150) rotate(216) translate(0,-105)">Przerwa</text>
-                    <text class="knob-label" text-anchor="middle" dominant-baseline="middle"
-                          transform="translate(150,150) rotate(288) translate(0,-105)">Rozkładanie</text>
-                    <!-- Center pivot dot -->
-                    <circle cx="150" cy="150" r="7" fill="rgba(255,255,255,0.9)" stroke="rgba(0,0,0,0.3)" stroke-width="1.5"/>
-                </svg>
+            <div style="margin-top: 3rem;">
+                  <h3>Ostatnie aktywności</h3>
+                  <div id="logHistory" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <!-- Logs will be loaded here -->
+                  </div>
             </div>
+      </div>
+      <div id="sse-status">Połączenie utracone - próba odnowienia...</div>
+      <div id="toast-container"></div>
 
-            <div id="currentStateName" style="font-size: 1.2rem; font-weight: 600; color: rgba(255,255,255,0.7)">
-                Stan: OFF
-            </div>
-        </div>
-
-        <div style="margin-top: 3rem;">
-            <h3>Ostatnie aktywności</h3>
-            <div id="logHistory" style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                <!-- Logs will be loaded here -->
-            </div>
-        </div>
-    </div>
-    <div id="sse-status">Połączenie utracone - próba odnowienia...</div>
-    <div id="toast-container"></div>
-
-    <script src="app.js"></script>
-    <script>
-        // Specific logic for user.html
-        window.addEventListener('load', () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const userId = urlParams.get('id');
-            if (userId) {
-                startUserRefresh(userId);
-            }
-            initKnobInteraction();
-        });
-    </script>
+      <script src="app.js"></script>
+      <script>
+            // Specific logic for user.html
+            window.addEventListener('load', () => {
+                  const urlParams = new URLSearchParams(window.location.search);
+                  const userId = urlParams.get('id');
+                  if (userId) {
+                        startUserRefresh(userId);
+                  }
+                  initKnobInteraction();
+            });
+      </script>
 </body>
 
 </html>

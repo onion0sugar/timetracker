@@ -12,7 +12,7 @@ function showToast(message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     const icons = {
         success: '✅',
         error: '❌',
@@ -285,7 +285,7 @@ async function initUserSwitch(id) {
         // Find most recent active log
         const latest = data.logs[0];
         if (latest && !latest.end_time) {
-            const positions = { 'OFF': 0, 'Pakowanie': 1, 'Zbieranie': 2, 'Przerwa': 3, 'Rozkładanie': 4, 'Inne': 4 };
+            const positions = { 'OFF': 0, 'Przerwa': 1, 'Zbieranie': 2, 'Pakowanie': 3, 'Rozkładanie': 4, 'Inne': 5 };
             setUI(positions[latest.state], latest.state, false);
             startTimer(new Date(latest.start_time));
         } else {
@@ -395,11 +395,12 @@ function renderLogs(logs) {
 // --- Rotary Knob ---
 
 const KNOB_POS_DATA = [
-    { pos: 0, state: 'OFF',         angle: 0   },
-    { pos: 1, state: 'Pakowanie',   angle: 72  },
-    { pos: 2, state: 'Zbieranie',   angle: 144 },
-    { pos: 3, state: 'Przerwa',     angle: 216 },
-    { pos: 4, state: 'Rozkładanie', angle: 288 }
+    { pos: 0, state: 'OFF', angle: 30 },
+    { pos: 1, state: 'Przerwa', angle: 90 },
+    { pos: 2, state: 'Zbieranie', angle: 150 },
+    { pos: 3, state: 'Pakowanie', angle: 210 },
+    { pos: 4, state: 'Rozkładanie', angle: 270 },
+    { pos: 5, state: 'Inne', angle: 330 }
 ];
 
 function updateKnob(pos, state) {
@@ -427,8 +428,8 @@ function initKnobInteraction() {
 
     function angleFromCenter(clientX, clientY) {
         const rect = svg.getBoundingClientRect();
-        const cx = rect.left + rect.width  / 2;
-        const cy = rect.top  + rect.height / 2;
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
         // angle from top, clockwise
         return (Math.atan2(clientX - cx, -(clientY - cy)) * 180 / Math.PI + 360) % 360;
     }
@@ -444,7 +445,7 @@ function initKnobInteraction() {
     }
 
     // Touch
-    svg.addEventListener('touchstart',  (e) => { dragging = true; e.preventDefault(); }, { passive: false });
+    svg.addEventListener('touchstart', (e) => { dragging = true; e.preventDefault(); }, { passive: false });
     svg.addEventListener('touchmove', (e) => {
         if (!dragging) return;
         const t = e.touches[0];
@@ -561,7 +562,7 @@ function connectSSE(onUpdate) {
         console.warn('[SSE] Connection lost, reconnecting in 3s...');
         sse.close();
         if (statusEl) statusEl.classList.add('visible');
-        
+
         // Reconnect after 3 seconds
         setTimeout(() => connectSSE(onUpdate), 3000);
     };
