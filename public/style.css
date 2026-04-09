@@ -7,9 +7,10 @@
     --text: #ffffff;
     --off: #95a5a6;
     --pakowanie: #3498db;
-    --zbieranie: #f1c40f;
+    --zbieranie: #2ecc71;  /* Zmienione na zielony */
     --przerwa: #e67e22;
-    --inne: #9b59b6;
+    --rozkladanie: #9b59b6;
+    --inne: #f1c40f;       /* Nowe Inne w kolorze starego zbierania */
 }
 
 * {
@@ -138,29 +139,12 @@ button:hover {
     margin-bottom: 1rem;
 }
 
-.status-off {
-    background: var(--off);
-}
-
-.status-pakowanie {
-    background: var(--pakowanie);
-}
-
-.status-zbieranie {
-    background: var(--zbieranie);
-}
-
-.status-przerwa {
-    background: var(--przerwa);
-}
-
-.status-inne {
-    background: var(--inne);
-}
-
-.status-rozkladanie {
-    background: var(--inne);
-}
+.status-off { background: var(--off); }
+.status-przerwa { background: var(--przerwa); }
+.status-zbieranie { background: var(--zbieranie); }
+.status-pakowanie { background: var(--pakowanie); }
+.status-rozkladanie { background: var(--rozkladanie); }
+.status-inne { background: var(--inne); }
 
 .copy-link {
     font-size: 0.8rem;
@@ -208,37 +192,19 @@ button:hover {
     position: absolute;
     top: 8px;
     left: 8px;
-    width: calc(20% - 4px);
+    width: calc(16.666% - 4px);
     height: calc(100% - 16px);
     background: var(--primary);
     border-radius: 34px;
     transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), background 0.3s;
 }
 
-.pos0 {
-    transform: translateX(0);
-    background: var(--off);
-}
-
-.pos1 {
-    transform: translateX(100%);
-    background: var(--pakowanie);
-}
-
-.pos2 {
-    transform: translateX(200%);
-    background: var(--zbieranie);
-}
-
-.pos3 {
-    transform: translateX(300%);
-    background: var(--przerwa);
-}
-
-.pos4 {
-    transform: translateX(400%);
-    background: var(--inne);
-}
+.pos0 { transform: translateX(0); background: var(--off); }
+.pos1 { transform: translateX(100%); background: var(--przerwa); }
+.pos2 { transform: translateX(200%); background: var(--zbieranie); }
+.pos3 { transform: translateX(300%); background: var(--pakowanie); }
+.pos4 { transform: translateX(400%); background: var(--rozkladanie); }
+.pos5 { transform: translateX(500%); background: var(--inne); }
 
 /* ── Rotary Knob (mobile) ────────────────────────────────── */
 .knob-wrapper {

@@ -59,28 +59,6 @@ async function initDB() {
             console.log('Database migrated: added idx_start_time index on activity_logs');
         }
 
-        // Migration: Rename 'Inne' and 'Rozkladanie' → 'Rozkładanie' in activity_logs
-        const [inneLogs] = await db.query(
-            `SELECT COUNT(*) AS cnt FROM activity_logs WHERE state IN ('Inne', 'Rozkladanie')`
-        );
-        if (inneLogs[0].cnt > 0) {
-            await db.query(
-                `UPDATE activity_logs SET state = 'Rozkładanie' WHERE state IN ('Inne', 'Rozkladanie')`
-            );
-            console.log(`Database migrated: renamed ${inneLogs[0].cnt} log(s) to 'Rozkładanie'`);
-        }
-
-        // Migration: Rename 'Inne' and 'Rozkladanie' → 'Rozkładanie' in users.current_state
-        const [inneUsers] = await db.query(
-            `SELECT COUNT(*) AS cnt FROM users WHERE current_state IN ('Inne', 'Rozkladanie')`
-        ).catch(() => [[{ cnt: 0 }]]); // graceful fallback if column doesn't exist yet
-        if (inneUsers[0].cnt > 0) {
-            await db.query(
-                `UPDATE users SET current_state = 'Rozkładanie' WHERE current_state IN ('Inne', 'Rozkladanie')`
-            );
-            console.log(`Database migrated: renamed ${inneUsers[0].cnt} user(s) current_state to 'Rozkładanie'`);
-        }
-
         console.log('MySQL Database initialized');
     } catch (err) {
         console.error('Error initializing MySQL:', err);
