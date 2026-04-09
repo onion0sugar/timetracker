@@ -118,6 +118,7 @@ button:hover {
     padding: 1.5rem;
     border-radius: 20px;
     transition: 0.3s;
+    max-width: 400px;
 }
 
 .user-card:hover {
@@ -145,10 +146,6 @@ button:hover {
 .status-pakowanie { background: var(--pakowanie); }
 .status-rozkladanie { background: var(--rozkladanie); }
 .status-inne { background: var(--inne); }
-
-.status-rozkladanie {
-    background: var(--inne);
-}
 
 .copy-link {
     font-size: 0.8rem;
@@ -241,36 +238,6 @@ button:hover {
     pointer-events: none;
 }
 
-/* ── Rotary Knob (mobile) ────────────────────────────────── */
-.knob-wrapper {
-    display: none;
-    width: 100%;
-    max-width: 360px;
-    margin: 0 auto;
-    user-select: none;
-    -webkit-user-select: none;
-    cursor: grab;
-}
-
-.knob-sector {
-    opacity: 0.38;
-    transition: opacity 0.2s ease, filter 0.2s ease;
-    cursor: pointer;
-}
-
-.knob-sector.active {
-    opacity: 1;
-}
-
-.knob-label {
-    fill: rgba(255, 255, 255, 0.9);
-    font-size: 12px;
-    font-weight: 700;
-    font-family: 'Inter', system-ui, sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-    pointer-events: none;
-}
 
 /* Timer */
 .timer-display {

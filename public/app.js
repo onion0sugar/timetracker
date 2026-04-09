@@ -5,6 +5,21 @@ let pendingDeleteId = null;
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 let isViewAuthenticated = sessionStorage.getItem('isViewAuthenticated') === 'true';
 
+// Helper to normalize Polish state names for CSS classes
+function getStateClass(state) {
+    if (!state) return 'off';
+    return state.toLowerCase()
+        .replace(/ą/g, 'a')
+        .replace(/ć/g, 'c')
+        .replace(/ę/g, 'e')
+        .replace(/ł/g, 'l')
+        .replace(/ń/g, 'n')
+        .replace(/ó/g, 'o')
+        .replace(/ś/g, 's')
+        .replace(/ź/g, 'z')
+        .replace(/ż/g, 'z');
+}
+
 // --- Toast System ---
 function showToast(message, type = 'info') {
     const container = document.getElementById('toast-container');
@@ -43,10 +58,11 @@ async function fetchUsers() {
         if (!grid) return;
 
         grid.innerHTML = users.map(user => {
+            const stateClass = getStateClass(user.current_state);
             const statsHtml = user.daily_stats && user.daily_stats.length > 0
                 ? user.daily_stats.map(s => `
-                    <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
-                        <span style="font-weight: 500;">${s.state}:</span>
+                    <div style="display: flex; gap: 10px; margin-bottom: 2px;">
+                        <span style="font-weight: 600; min-width: 90px; opacity: 0.9;">${s.state}:</span>
                         <span id="stat-${user.id}-${s.state}">${formatDuration(s.duration || 0)}</span>
                     </div>
                 `).join('')
@@ -55,12 +71,14 @@ async function fetchUsers() {
             return `
                 <div class="user-card" style="position: relative;">
                     <button class="delete-user-btn admin-only" data-id="${user.id}" style="position: absolute; top: 10px; right: 10px; padding: 5px 10px; background: rgba(235, 77, 75, 0.2); color: #eb4d4b; border-radius: 8px; font-size: 0.8rem; border: none; cursor: pointer;">USUŃ</button>
-                    <span class="status-badge status-${(user.current_state || 'OFF').toLowerCase()}">
-                        ${user.current_state || 'OFF'}
-                    </span>
-                    <h3>${user.name}</h3>
-                    <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem;">
-                        <div style="font-weight: 600; margin-bottom: 5px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.7;">Dzisiaj:</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="margin: 0; font-size: 1.2rem;">${user.name}</h3>
+                        <span class="status-badge status-${stateClass}" style="margin: 0;">
+                            ${user.current_state || 'OFF'}
+                        </span>
+                    </div>
+                    <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 0.5rem;">
+                        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Dzisiaj:</div>
                         ${statsHtml}
                     </div>
                     <div class="copy-link admin-only" data-id="${user.id}">
