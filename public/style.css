@@ -158,6 +158,10 @@ button:hover {
     background: var(--inne);
 }
 
+.status-rozkladanie {
+    background: var(--inne);
+}
+
 .copy-link {
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.6);
@@ -234,6 +238,47 @@ button:hover {
 .pos4 {
     transform: translateX(400%);
     background: var(--inne);
+}
+
+/* ── Rotary Knob (mobile) ────────────────────────────────── */
+.knob-wrapper {
+    display: none;
+    width: 100%;
+    max-width: 290px;
+    margin: 0 auto;
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+}
+
+.knob-sector {
+    opacity: 0.38;
+    transition: opacity 0.2s ease, filter 0.2s ease;
+    cursor: pointer;
+}
+
+.knob-sector.active {
+    opacity: 1;
+}
+
+.knob-label {
+    fill: rgba(255, 255, 255, 0.8);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'Inter', system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    pointer-events: none;
+}
+
+.knob-center-text {
+    fill: rgba(255, 255, 255, 0.95);
+    font-size: 12px;
+    font-weight: 700;
+    font-family: 'Inter', system-ui, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    pointer-events: none;
 }
 
 /* Timer */
@@ -494,24 +539,11 @@ body.admin-mode #adminLoginBtn {
     }
 
     .switch-rack {
-        height: 54px;
-        padding: 4px;
-        border-radius: 30px;
+        display: none;
     }
 
-    .switch-option {
-        font-size: 0.6rem;
-        font-weight: 700;
-        letter-spacing: -0.3px;
-        padding: 0 2px;
-    }
-
-    .switch-slider {
-        top: 4px;
-        left: 4px;
-        height: calc(100% - 8px);
-        width: calc(20% - 2px);
-        border-radius: 26px;
+    .knob-wrapper {
+        display: block;
     }
 
     .form-group {
