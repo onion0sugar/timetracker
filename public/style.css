@@ -238,6 +238,52 @@ button:hover {
     pointer-events: none;
 }
 
+/* ── Tile Grid — Mobile Interface ───────────────────────── */
+.tile-grid {
+    display: none; /* Hidden on desktop */
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-rows: repeat(3, auto);
+    gap: 12px;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.tile-btn {
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 18px;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    color: rgba(255, 255, 255, 0.9);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.tile-btn:active {
+    transform: scale(0.95);
+}
+
+.tile-btn.active {
+    border-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    filter: brightness(1.1);
+}
+
+/* Specific Tile Colors */
+.tile-btn[data-state="OFF"]        { background: var(--off); }
+.tile-btn[data-state="Przerwa"]    { background: var(--przerwa); }
+.tile-btn[data-state="Zbieranie"]  { background: var(--zbieranie); }
+.tile-btn[data-state="Pakowanie"]  { background: var(--pakowanie); }
+.tile-btn[data-state="Rozkładanie"] { background: var(--rozkladanie); }
+.tile-btn[data-state="Inne"]       { background: var(--inne); }
+
+
 
 /* Timer */
 .timer-display {
@@ -501,7 +547,32 @@ body.admin-mode #adminLoginBtn {
     }
 
     .knob-wrapper {
-        display: block;
+        display: none;
+    }
+
+    .tile-grid {
+        display: grid;
+    }
+
+    .switch-container {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .timer-display {
+        order: 1;
+        margin-bottom: 0.5rem;
+    }
+
+    #currentStateName {
+        order: 2;
+        margin-bottom: 1.5rem;
+        font-size: 1.2rem !important;
+        opacity: 0.8;
+    }
+
+    .tile-grid {
+        order: 3;
     }
 
     .form-group {

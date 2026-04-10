@@ -348,6 +348,7 @@ async function setPos(pos, state) {
     slider.className = `switch-slider pos${pos}`;
     stateDisplay.textContent = `Stan: ${state}`;
     updateKnob(pos, state);
+    updateTiles(state);
 
     // API Update
     try {
@@ -374,9 +375,17 @@ async function setPos(pos, state) {
 function setUI(pos, state, updateApi = true) {
     const slider = document.getElementById('slider');
     const stateDisplay = document.getElementById('currentStateName');
-    slider.className = `switch-slider pos${pos}`;
-    stateDisplay.textContent = `Stan: ${state}`;
+    if (slider) slider.className = `switch-slider pos${pos}`;
+    if (stateDisplay) stateDisplay.textContent = `Stan: ${state}`;
     updateKnob(pos, state);
+    updateTiles(state);
+}
+
+function updateTiles(activeState) {
+    const tiles = document.querySelectorAll('.tile-btn');
+    tiles.forEach(tile => {
+        tile.classList.toggle('active', tile.getAttribute('data-state') === activeState);
+    });
 }
 
 function startTimer(baseTime) {
