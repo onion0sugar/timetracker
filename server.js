@@ -80,7 +80,10 @@ app.post('/api/admin-login', (req, res) => {
 
 // API: Create User
 app.post('/api/users', async (req, res) => {
-    const { name } = req.body;
+    const { name, password } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+        return res.status(403).json({ error: 'Niepoprawne hasło serwisowe' });
+    }
     if (!name) return res.status(400).json({ error: 'Name is required' });
 
     const id = uuidv4();

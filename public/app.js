@@ -81,7 +81,7 @@ async function fetchUsers() {
                         ${statsHtml}
                     </div>
                     
-                    <div class="admin-only" style="display: flex !important; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
+                    <div class="admin-only" style="justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
                         <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8; font-size: 0.85rem;">
                             🔗 Link
                         </div>
@@ -107,7 +107,10 @@ async function addUser() {
         const response = await fetch('/api/users', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ 
+                name,
+                password: sessionStorage.getItem('adminPassword')
+            })
         });
         if (response.ok) {
             input.value = '';

@@ -321,7 +321,7 @@ body.admin-mode .admin-only {
 }
 
 body.admin-mode .user-card .admin-only {
-    display: inline-block !important;
+    display: flex !important;
 }
 
 body.admin-mode .form-group.admin-only {
