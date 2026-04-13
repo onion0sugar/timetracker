@@ -7,10 +7,12 @@
     --text: #ffffff;
     --off: #95a5a6;
     --pakowanie: #3498db;
-    --zbieranie: #2ecc71;  /* Zmienione na zielony */
+    --zbieranie: #2ecc71;
+    /* Zmienione na zielony */
     --przerwa: #e67e22;
     --rozkladanie: #9b59b6;
-    --inne: #f1c40f;       /* Nowe Inne w kolorze starego zbierania */
+    --inne: #f1c40f;
+    /* Nowe Inne w kolorze starego zbierania */
 }
 
 * {
@@ -140,12 +142,29 @@ button:hover {
     margin-bottom: 1rem;
 }
 
-.status-off { background: var(--off); }
-.status-przerwa { background: var(--przerwa); }
-.status-zbieranie { background: var(--zbieranie); }
-.status-pakowanie { background: var(--pakowanie); }
-.status-rozkladanie { background: var(--rozkladanie); }
-.status-inne { background: var(--inne); }
+.status-off {
+    background: var(--off);
+}
+
+.status-przerwa {
+    background: var(--przerwa);
+}
+
+.status-zbieranie {
+    background: var(--zbieranie);
+}
+
+.status-pakowanie {
+    background: var(--pakowanie);
+}
+
+.status-rozkladanie {
+    background: var(--rozkladanie);
+}
+
+.status-inne {
+    background: var(--inne);
+}
 
 .copy-link {
     font-size: 0.8rem;
@@ -197,15 +216,38 @@ button:hover {
     height: calc(100% - 16px);
     background: var(--primary);
     border-radius: 34px;
-    transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55), background 0.3s;
+    transition: transform 0.4s cubic-bezier(0.5, -0.03, 0.47, 0.99), background 0.3s;
 }
 
-.pos0 { transform: translateX(0); background: var(--off); }
-.pos1 { transform: translateX(100%); background: var(--przerwa); }
-.pos2 { transform: translateX(200%); background: var(--zbieranie); }
-.pos3 { transform: translateX(300%); background: var(--pakowanie); }
-.pos4 { transform: translateX(400%); background: var(--rozkladanie); }
-.pos5 { transform: translateX(500%); background: var(--inne); }
+.pos0 {
+    transform: translateX(0);
+    background: var(--off);
+}
+
+.pos1 {
+    transform: translateX(100%);
+    background: var(--przerwa);
+}
+
+.pos2 {
+    transform: translateX(200%);
+    background: var(--zbieranie);
+}
+
+.pos3 {
+    transform: translateX(300%);
+    background: var(--pakowanie);
+}
+
+.pos4 {
+    transform: translateX(400%);
+    background: var(--rozkladanie);
+}
+
+.pos5 {
+    transform: translateX(500%);
+    background: var(--inne);
+}
 
 /* ── Rotary Knob (mobile) ────────────────────────────────── */
 .knob-wrapper {
@@ -240,7 +282,8 @@ button:hover {
 
 /* ── Tile Grid — Mobile Interface ───────────────────────── */
 .tile-grid {
-    display: none; /* Hidden on desktop */
+    display: none;
+    /* Hidden on desktop */
     grid-template-columns: repeat(2, 1fr);
     grid-template-rows: repeat(3, auto);
     gap: 12px;
@@ -262,7 +305,7 @@ button:hover {
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     border: 2px solid transparent;
     color: rgba(255, 255, 255, 0.9);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .tile-btn:active {
@@ -270,18 +313,37 @@ button:hover {
 }
 
 .tile-btn.active {
-    border-color: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+    border-color: rgb(255 3 3);
+    box-shadow: 0 0 30px rgb(255 3 3);
     filter: brightness(1.1);
+    color: rgb(255 3 3);
+    border-width: 5px;
 }
 
 /* Specific Tile Colors */
-.tile-btn[data-state="OFF"]        { background: var(--off); }
-.tile-btn[data-state="Przerwa"]    { background: var(--przerwa); }
-.tile-btn[data-state="Zbieranie"]  { background: var(--zbieranie); }
-.tile-btn[data-state="Pakowanie"]  { background: var(--pakowanie); }
-.tile-btn[data-state="Rozkładanie"] { background: var(--rozkladanie); }
-.tile-btn[data-state="Inne"]       { background: var(--inne); }
+.tile-btn[data-state="OFF"] {
+    background: var(--off);
+}
+
+.tile-btn[data-state="Przerwa"] {
+    background: var(--przerwa);
+}
+
+.tile-btn[data-state="Zbieranie"] {
+    background: var(--zbieranie);
+}
+
+.tile-btn[data-state="Pakowanie"] {
+    background: var(--pakowanie);
+}
+
+.tile-btn[data-state="Rozkładanie"] {
+    background: var(--rozkladanie);
+}
+
+.tile-btn[data-state="Inne"] {
+    background: var(--inne);
+}
 
 
 
