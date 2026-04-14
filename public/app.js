@@ -347,7 +347,6 @@ async function setPos(pos, state) {
     // UI Update
     slider.className = `switch-slider pos${pos}`;
     stateDisplay.textContent = `Stan: ${state}`;
-    updateKnob(pos, state);
     updateTiles(state);
 
     // API Update
@@ -377,7 +376,6 @@ function setUI(pos, state, updateApi = true) {
     const stateDisplay = document.getElementById('currentStateName');
     if (slider) slider.className = `switch-slider pos${pos}`;
     if (stateDisplay) stateDisplay.textContent = `Stan: ${state}`;
-    updateKnob(pos, state);
     updateTiles(state);
 }
 
@@ -425,89 +423,7 @@ function renderLogs(logs) {
     `).join('');
 }
 
-// --- Rotary Knob ---
 
-const KNOB_POS_DATA = [
-    { pos: 0, state: 'OFF', angle: 30 },
-    { pos: 1, state: 'Przerwa', angle: 90 },
-    { pos: 2, state: 'Zbieranie', angle: 150 },
-    { pos: 3, state: 'Pakowanie', angle: 210 },
-    { pos: 4, state: 'Rozkładanie', angle: 270 },
-    { pos: 5, state: 'Inne', angle: 330 }
-];
-
-function updateKnob(pos, state) {
-    const sectors = document.querySelectorAll('.knob-sector');
-    if (!sectors.length) return;
-
-    sectors.forEach((s, i) => {
-        s.classList.toggle('active', i === pos);
-    });
-}
-
-function initKnobInteraction() {
-    const svg = document.getElementById('knobSvg');
-    if (!svg) return;
-
-    // Tap on sector
-    svg.querySelectorAll('.knob-sector').forEach(sector => {
-        sector.addEventListener('click', () => {
-            setPos(parseInt(sector.dataset.pos), sector.dataset.state);
-        });
-    });
-
-    // Drag-to-rotate
-    let dragging = false;
-
-    function angleFromCenter(clientX, clientY) {
-        const rect = svg.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        // angle from top, clockwise
-        return (Math.atan2(clientX - cx, -(clientY - cy)) * 180 / Math.PI + 360) % 360;
-    }
-
-    function nearestPos(angle) {
-        return KNOB_POS_DATA.reduce((best, kp) => {
-            let d = Math.abs(angle - kp.angle);
-            if (d > 180) d = 360 - d;
-            let bd = Math.abs(angle - best.angle);
-            if (bd > 180) bd = 360 - bd;
-            return d < bd ? kp : best;
-        }, KNOB_POS_DATA[0]);
-    }
-
-    // Touch
-    svg.addEventListener('touchstart', (e) => { dragging = true; e.preventDefault(); }, { passive: false });
-    svg.addEventListener('touchmove', (e) => {
-        if (!dragging) return;
-        const t = e.touches[0];
-        const kp = nearestPos(angleFromCenter(t.clientX, t.clientY));
-        updateKnob(kp.pos, kp.state);
-        e.preventDefault();
-    }, { passive: false });
-    svg.addEventListener('touchend', (e) => {
-        if (!dragging) return;
-        dragging = false;
-        const t = e.changedTouches[0];
-        const kp = nearestPos(angleFromCenter(t.clientX, t.clientY));
-        setPos(kp.pos, kp.state);
-    });
-
-    // Mouse (desktop testing)
-    svg.addEventListener('mousedown', (e) => { dragging = true; });
-    window.addEventListener('mousemove', (e) => {
-        if (!dragging) return;
-        const kp = nearestPos(angleFromCenter(e.clientX, e.clientY));
-        updateKnob(kp.pos, kp.state);
-    });
-    window.addEventListener('mouseup', (e) => {
-        if (!dragging) return;
-        dragging = false;
-        const kp = nearestPos(angleFromCenter(e.clientX, e.clientY));
-        setPos(kp.pos, kp.state);
-    });
-}
 
 // Initial load
 if (document.getElementById('userGrid')) {
