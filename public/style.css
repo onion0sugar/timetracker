@@ -212,7 +212,7 @@ button:hover {
     position: absolute;
     top: 8px;
     left: 8px;
-    width: calc(16.666% - 4px);
+    width: calc(16.666% - 2.7px);
     height: calc(100% - 16px);
     background: var(--primary);
     border-radius: 34px;
