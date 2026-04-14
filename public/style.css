@@ -168,7 +168,7 @@ button:hover {
 
 .copy-link {
     font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: rgba(255, 255, 254, 0.6);
     cursor: pointer;
     display: flex;
     align-items: center;
