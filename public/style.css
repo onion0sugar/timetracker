@@ -22,6 +22,11 @@
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
+option {
+    color: black;
+}
+
+
 body {
     background: radial-gradient(circle at top left, var(--bg-dark), #1e1b4b);
     color: var(--text);
@@ -191,10 +196,11 @@ button:hover {
 .filter-bar {
     display: flex;
     gap: 0.5rem;
-    margin-bottom: 1.5rem;
     overflow-x: auto;
-    padding-bottom: 10px;
+    padding: 10px;
     scrollbar-width: none;
+    justify-content: center;
+    align-items: center;
 }
 
 .filter-bar::-webkit-scrollbar {
@@ -413,7 +419,8 @@ button:hover {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.modal-content input, .modal-content select {
+.modal-content input,
+.modal-content select {
     width: 100%;
     margin-bottom: 1rem;
 }
