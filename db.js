@@ -21,6 +21,7 @@ async function initDB() {
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(255) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
+                category VARCHAR(50) DEFAULT NULL,
                 deleted TINYINT DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
@@ -39,6 +40,13 @@ async function initDB() {
                 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
             )
         `);
+
+        // Migration: Add category column if it doesn't exist
+        const [catColumns] = await db.query('SHOW COLUMNS FROM users LIKE "category"');
+        if (catColumns.length === 0) {
+            await db.query('ALTER TABLE users ADD COLUMN category VARCHAR(50) DEFAULT NULL AFTER name');
+            console.log('Database migrated: added "category" column to users table');
+        }
 
         // Migration: Add deleted column if it doesn't exist
         const [columns] = await db.query('SHOW COLUMNS FROM users LIKE "deleted"');

@@ -4,6 +4,9 @@ let startTime = null;
 let pendingDeleteId = null;
 let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 let isViewAuthenticated = sessionStorage.getItem('isViewAuthenticated') === 'true';
+let allUsers = [];
+let currentFilter = 'all';
+let userToEdit = null;
 
 // Helper to normalize Polish state names for CSS classes
 function getStateClass(state) {
@@ -53,54 +56,76 @@ function showToast(message, type = 'info') {
 async function fetchUsers() {
     try {
         const response = await fetch('/api/users');
-        const users = await response.json();
-        const grid = document.getElementById('userGrid');
-        if (!grid) return;
-
-        grid.innerHTML = users.map(user => {
-            const stateClass = getStateClass(user.current_state);
-            const statsHtml = user.daily_stats && user.daily_stats.length > 0
-                ? user.daily_stats.map(s => `
-                    <div style="display: flex; gap: 10px; margin-bottom: 2px;">
-                        <span style="font-weight: 600; min-width: 90px; opacity: 0.9;">${s.state}:</span>
-                        <span id="stat-${user.id}-${s.state}">${formatDuration(s.duration || 0)}</span>
-                    </div>
-                `).join('')
-                : '<div style="opacity: 0.5;">Brak aktywności dzisiaj</div>';
-
-            return `
-                <div class="user-card" style="display: flex; flex-direction: column;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                        <h3 style="margin: 0; font-size: 1.2rem;">${user.name}</h3>
-                        <span class="status-badge status-${stateClass}" style="margin: 0;">
-                            ${user.current_state || 'OFF'}
-                        </span>
-                    </div>
-                    <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem; flex-grow: 1;">
-                        <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Dzisiaj:</div>
-                        ${statsHtml}
-                    </div>
-                    
-                    <div class="admin-only" style="justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08);">
-                        <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8; font-size: 0.85rem;">
-                            🔗 Link
-                        </div>
-                        <button class="delete-user-btn" data-id="${user.id}" style="padding: 6px 12px; background: rgba(235, 77, 75, 0.1); color: #eb4d4b; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(235, 77, 75, 0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
-                    </div>
-                </div>
-            `;
-        }).join('');
-
-        // Refresh admin visibility
-        updateAdminUI();
+        allUsers = await response.json();
+        renderUsers();
     } catch (err) {
         console.error('Error fetching users:', err);
     }
 }
 
+function renderUsers() {
+    const grid = document.getElementById('userGrid');
+    if (!grid) return;
+
+    const filteredUsers = allUsers.filter(user => {
+        if (currentFilter === 'all') return true;
+        if (currentFilter === 'none') return !user.category;
+        return user.category === currentFilter;
+    });
+
+    grid.innerHTML = filteredUsers.map(user => {
+        const stateClass = getStateClass(user.current_state);
+        const statsHtml = user.daily_stats && user.daily_stats.length > 0
+            ? user.daily_stats.map(s => `
+                <div style="display: flex; gap: 10px; margin-bottom: 2px;">
+                    <span style="font-weight: 600; min-width: 90px; opacity: 0.9;">${s.state}:</span>
+                    <span id="stat-${user.id}-${s.state}">${formatDuration(s.duration || 0)}</span>
+                </div>
+            `).join('')
+            : '<div style="opacity: 0.5;">Brak aktywności dzisiaj</div>';
+
+        return `
+            <div class="user-card" style="display: flex; flex-direction: column;">
+                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
+                    <div>
+                        <h3 style="margin: 0; font-size: 1.2rem;">${user.name}</h3>
+                        ${user.category ? `<div class="category-badge">${user.category}</div>` : ''}
+                    </div>
+                    <span class="status-badge status-${stateClass}" style="margin: 0;">
+                        ${user.current_state || 'OFF'}
+                    </span>
+                </div>
+                <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem; flex-grow: 1;">
+                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Dzisiaj:</div>
+                    ${statsHtml}
+                </div>
+                
+                <div class="admin-only" style="justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); gap: 8px;">
+                    <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8; font-size: 0.85rem;">
+                        🔗 Link
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="edit-user-btn" data-id="${user.id}" style="padding: 6px 12px; background: rgba(52, 152, 219, 0.1); color: #3498db; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(52, 152, 219, 0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
+                        <button class="delete-user-btn" data-id="${user.id}" style="padding: 6px 12px; background: rgba(235, 77, 75, 0.1); color: #eb4d4b; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(235, 77, 75, 0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
+    });
+
+    // Refresh admin visibility
+    updateAdminUI();
+}
+
 async function addUser() {
-    const input = document.getElementById('userNameInput');
-    const name = input.value.trim();
+    const nameInput = document.getElementById('userNameInput');
+    const categoryInput = document.getElementById('userCategoryInput');
+    const name = nameInput.value.trim();
     if (!name) return;
 
     try {
@@ -109,12 +134,15 @@ async function addUser() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ 
                 name,
+                category: categoryInput.value || null,
                 password: sessionStorage.getItem('adminPassword')
             })
         });
         if (response.ok) {
-            input.value = '';
+            nameInput.value = '';
+            categoryInput.value = '';
             fetchUsers();
+            showToast('Użytkownik dodany!', 'success');
         } else {
             const errData = await response.json();
             showToast('Błąd: ' + errData.error, 'error');
@@ -240,6 +268,58 @@ function adminLogout() {
 
 function closeAdminModal() {
     document.getElementById('adminModal').classList.remove('active');
+}
+
+function openEditModal(id) {
+    const user = allUsers.find(u => u.id === id);
+    if (!user) return;
+
+    userToEdit = user;
+    document.getElementById('editUserNameInput').value = user.name;
+    document.getElementById('editUserCategoryInput').value = user.category || '';
+    document.getElementById('editModal').classList.add('active');
+    document.getElementById('editUserNameInput').focus();
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.remove('active');
+    userToEdit = null;
+}
+
+async function saveUserChanges() {
+    if (!userToEdit) return;
+
+    const newName = document.getElementById('editUserNameInput').value.trim();
+    const newCategory = document.getElementById('editUserCategoryInput').value || null;
+    const pass = sessionStorage.getItem('adminPassword');
+
+    if (!newName) {
+        showToast('Imię nie może być puste', 'error');
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/users/${userToEdit.id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: newName,
+                category: newCategory,
+                password: pass
+            })
+        });
+
+        if (response.ok) {
+            showToast('Użytkownik zaktualizowany!', 'success');
+            closeEditModal();
+            fetchUsers();
+        } else {
+            const err = await response.json();
+            showToast('Błąd: ' + err.error, 'error');
+        }
+    } catch (err) {
+        console.error('Update error:', err);
+    }
 }
 
 function updateAdminUI() {
@@ -432,14 +512,27 @@ if (document.getElementById('userGrid')) {
     // Delegated Event Listeners
     grid.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.delete-user-btn');
+        const editBtn = e.target.closest('.edit-user-btn');
         const copyBtn = e.target.closest('.copy-link');
 
         if (deleteBtn) {
             const id = deleteBtn.getAttribute('data-id');
             deleteUser(id);
+        } else if (editBtn) {
+            const id = editBtn.getAttribute('data-id');
+            openEditModal(id);
         } else if (copyBtn) {
             const id = copyBtn.getAttribute('data-id');
             copyUserLink(id);
+        }
+    });
+
+    // Filter Bar Event Listeners
+    document.getElementById('filterBar').addEventListener('click', (e) => {
+        const btn = e.target.closest('.filter-btn');
+        if (btn) {
+            currentFilter = btn.getAttribute('data-filter');
+            renderUsers();
         }
     });
 
@@ -448,6 +541,13 @@ if (document.getElementById('userGrid')) {
     document.getElementById('adminLogoutBtn').addEventListener('click', adminLogout);
     document.getElementById('confirmLoginBtn').addEventListener('click', confirmLogin);
     document.getElementById('cancelLoginBtn').addEventListener('click', closeAdminModal);
+
+    // Edit Modal Event Listeners
+    document.getElementById('confirmEditBtn').addEventListener('click', saveUserChanges);
+    document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+    document.getElementById('editUserNameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveUserChanges();
+    });
 
     // View Access Event Listeners
     const confirmViewBtn = document.getElementById('confirmViewBtn');
@@ -465,7 +565,10 @@ if (document.getElementById('userGrid')) {
 
     // Close on escape
     window.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') closeAdminModal();
+        if (e.key === 'Escape') {
+            closeAdminModal();
+            closeEditModal();
+        }
     });
 
     updateViewUI();

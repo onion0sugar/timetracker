@@ -27,15 +27,60 @@
                 style="margin-bottom: 0; background: rgba(235, 77, 75, 0.2); color: #eb4d4b;">Wyloguj</button>
         </header>
 
-        <div class="form-group admin-only">
-            <input type="text" id="userNameInput" placeholder="Imię i nazwisko użytkownika...">
-            <button onclick="addUser()">Dodaj Użytkownika</button>
+        <div class="form-group admin-only" style="display: flex; gap: 10px; flex-wrap: wrap;">
+            <input type="text" id="userNameInput" placeholder="Imię i nazwisko użytkownika..." style="flex: 2; min-width: 200px;">
+            <select id="userCategoryInput" style="flex: 1; min-width: 150px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                <option value="">Brak kategorii</option>
+                <option value="Zbieranie">Zbieranie</option>
+                <option value="Pakowanie">Pakowanie</option>
+                <option value="Rozkładanie">Rozkładanie</option>
+                <option value="Palety">Palety</option>
+                <option value="Inne">Inne</option>
+            </select>
+            <button onclick="addUser()" style="min-width: 150px;">Dodaj Użytkownika</button>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar" id="filterBar">
+            <button class="filter-btn active" data-filter="all">Wszyscy</button>
+            <button class="filter-btn" data-filter="Zbieranie">Zbieranie</button>
+            <button class="filter-btn" data-filter="Pakowanie">Pakowanie</button>
+            <button class="filter-btn" data-filter="Rozkładanie">Rozkładanie</button>
+            <button class="filter-btn" data-filter="Palety">Palety</button>
+            <button class="filter-btn" data-filter="Inne">Inne</button>
+            <button class="filter-btn" data-filter="none">Pozostałe</button>
         </div>
 
         <div id="userGrid" class="user-grid">
             <!-- User cards will be loaded here -->
         </div>
     </div>
+    <!-- Edit User Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <h3>Edycja użytkownika</h3>
+            <div style="margin-bottom: 1rem;">
+                <label style="display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.7;">Imię i nazwisko:</label>
+                <input type="text" id="editUserNameInput" placeholder="Imię i nazwisko...">
+            </div>
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; font-size: 0.8rem; margin-bottom: 5px; opacity: 0.7;">Kategoria:</label>
+                <select id="editUserCategoryInput" style="width: 100%; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white;">
+                    <option value="">Brak kategorii</option>
+                    <option value="Zbieranie">Zbieranie</option>
+                    <option value="Pakowanie">Pakowanie</option>
+                    <option value="Rozkładanie">Rozkładanie</option>
+                    <option value="Palety">Palety</option>
+                    <option value="Inne">Inne</option>
+                </select>
+            </div>
+            <div class="modal-actions">
+                <button id="confirmEditBtn" class="btn-danger" style="background: #3498db; border-color: #2980b9;">Zapisz zmiany</button>
+                <button id="cancelEditBtn" class="btn-secondary">Anuluj</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Admin Login Modal -->
     <div id="adminModal" class="modal">
         <div class="modal-content">

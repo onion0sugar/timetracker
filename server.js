@@ -80,7 +80,7 @@ app.post('/api/admin-login', (req, res) => {
 
 // API: Create User
 app.post('/api/users', async (req, res) => {
-    const { name, password } = req.body;
+    const { name, category, password } = req.body;
     if (password !== ADMIN_PASSWORD) {
         return res.status(403).json({ error: 'Niepoprawne hasło serwisowe' });
     }
@@ -88,8 +88,8 @@ app.post('/api/users', async (req, res) => {
 
     const id = uuidv4();
     try {
-        await db.query('INSERT INTO users (id, name) VALUES (?, ?)', [id, name]);
-        res.json({ id, name });
+        await db.query('INSERT INTO users (id, name, category) VALUES (?, ?, ?)', [id, name, category || null]);
+        res.json({ id, name, category: category || null });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -99,7 +99,7 @@ app.post('/api/users', async (req, res) => {
 app.get('/api/users', async (req, res) => {
     try {
         const [users] = await db.query(`
-            SELECT u.id, u.name, 
+            SELECT u.id, u.name, u.category,
                    (SELECT state FROM activity_logs WHERE user_id = u.id AND end_time IS NULL ORDER BY start_time DESC LIMIT 1) as current_state,
                    (SELECT start_time FROM activity_logs WHERE user_id = u.id AND end_time IS NULL ORDER BY start_time DESC LIMIT 1) as current_session_start
             FROM users u WHERE u.deleted = 0
@@ -171,6 +171,21 @@ app.post('/api/logs', async (req, res) => {
 
         broadcastUpdate({ userId });
         res.json({ success: true, state, userName: user ? user.name : 'Unknown' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// API: Update User (Admin Protected)
+app.put('/api/users/:id', async (req, res) => {
+    const { name, category, password } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+        return res.status(403).json({ error: 'Niepoprawne hasło serwisowe' });
+    }
+
+    try {
+        await db.query('UPDATE users SET name = ?, category = ? WHERE id = ?', [name, category || null, req.params.id]);
+        res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
