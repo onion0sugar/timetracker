@@ -75,6 +75,7 @@ function renderUsers() {
 
     grid.innerHTML = filteredUsers.map(user => {
         const stateClass = getStateClass(user.current_state);
+        const displayName = (user.given_name && user.given_name.trim() !== '') ? user.given_name : user.name;
         const statsHtml = user.daily_stats && user.daily_stats.length > 0
             ? user.daily_stats.map(s => `
                 <div style="display: flex; gap: 10px; margin-bottom: 2px;">
@@ -88,7 +89,7 @@ function renderUsers() {
             <div class="user-card" style="display: flex; flex-direction: column;">
                 <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
                     <div>
-                        <h3 style="margin: 0; font-size: 1.2rem;">${user.name}</h3>
+                        <h3 style="margin: 0; font-size: 1.2rem;">${displayName}</h3>
                         ${user.category ? `<div class="category-badge">${user.category}</div>` : ''}
                     </div>
                     <span class="status-badge status-${stateClass}" style="margin: 0;">
@@ -122,34 +123,14 @@ function renderUsers() {
     updateAdminUI();
 }
 
-async function addUser() {
-    const nameInput = document.getElementById('userNameInput');
-    const categoryInput = document.getElementById('userCategoryInput');
-    const name = nameInput.value.trim();
-    if (!name) return;
-
-    try {
-        const response = await fetch('/api/users', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                name,
-                category: categoryInput.value || null,
-                password: sessionStorage.getItem('adminPassword')
-            })
-        });
-        if (response.ok) {
-            nameInput.value = '';
-            categoryInput.value = '';
-            fetchUsers();
-            showToast('Użytkownik dodany!', 'success');
-        } else {
-            const errData = await response.json();
-            showToast('Błąd: ' + errData.error, 'error');
-        }
-    } catch (err) {
-        console.error('Error adding user:', err);
-    }
+function addUser() {
+    userToEdit = null;
+    document.getElementById('modalTitle').textContent = 'Nowy użytkownik';
+    document.getElementById('editUserGivenNameInput').value = '';
+    document.getElementById('editUserNameInput').value = '';
+    document.getElementById('editUserCategoryInput').value = '';
+    document.getElementById('editModal').classList.add('active');
+    document.getElementById('editUserGivenNameInput').focus();
 }
 
 function copyUserLink(id) {
@@ -275,10 +256,12 @@ function openEditModal(id) {
     if (!user) return;
 
     userToEdit = user;
+    document.getElementById('modalTitle').textContent = 'Edycja użytkownika';
+    document.getElementById('editUserGivenNameInput').value = user.given_name || '';
     document.getElementById('editUserNameInput').value = user.name;
     document.getElementById('editUserCategoryInput').value = user.category || '';
     document.getElementById('editModal').classList.add('active');
-    document.getElementById('editUserNameInput').focus();
+    document.getElementById('editUserGivenNameInput').focus();
 }
 
 function closeEditModal() {
@@ -287,30 +270,33 @@ function closeEditModal() {
 }
 
 async function saveUserChanges() {
-    if (!userToEdit) return;
+    const givenName = document.getElementById('editUserGivenNameInput').value.trim();
+    const name = document.getElementById('editUserNameInput').value.trim();
+    const category = document.getElementById('editUserCategoryInput').value || null;
+    const password = sessionStorage.getItem('adminPassword');
 
-    const newName = document.getElementById('editUserNameInput').value.trim();
-    const newCategory = document.getElementById('editUserCategoryInput').value || null;
-    const pass = sessionStorage.getItem('adminPassword');
-
-    if (!newName) {
-        showToast('Imię nie może być puste', 'error');
+    if (!name) {
+        showToast('Login WMS nie może być pusty', 'error');
         return;
     }
 
     try {
-        const response = await fetch(`/api/users/${userToEdit.id}`, {
-            method: 'PUT',
+        const method = userToEdit ? 'PUT' : 'POST';
+        const url = userToEdit ? `/api/users/${userToEdit.id}` : '/api/users';
+        
+        const response = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                name: newName,
-                category: newCategory,
-                password: pass
+                name,
+                givenName,
+                category,
+                password
             })
         });
 
         if (response.ok) {
-            showToast('Użytkownik zaktualizowany!', 'success');
+            showToast(userToEdit ? 'Użytkownik zaktualizowany!' : 'Użytkownik dodany!', 'success');
             closeEditModal();
             fetchUsers();
         } else {
@@ -318,7 +304,8 @@ async function saveUserChanges() {
             showToast('Błąd: ' + err.error, 'error');
         }
     } catch (err) {
-        console.error('Update error:', err);
+        console.error('Save error:', err);
+        showToast('Błąd połączenia z serwerem', 'error');
     }
 }
 
@@ -541,10 +528,14 @@ if (document.getElementById('userGrid')) {
     document.getElementById('adminLogoutBtn').addEventListener('click', adminLogout);
     document.getElementById('confirmLoginBtn').addEventListener('click', confirmLogin);
     document.getElementById('cancelLoginBtn').addEventListener('click', closeAdminModal);
+    document.getElementById('addUserBtn').addEventListener('click', addUser);
 
     // Edit Modal Event Listeners
     document.getElementById('confirmEditBtn').addEventListener('click', saveUserChanges);
     document.getElementById('cancelEditBtn').addEventListener('click', closeEditModal);
+    document.getElementById('editUserGivenNameInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') saveUserChanges();
+    });
     document.getElementById('editUserNameInput').addEventListener('keydown', (e) => {
         if (e.key === 'Enter') saveUserChanges();
     });

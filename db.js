@@ -21,6 +21,7 @@ async function initDB() {
             CREATE TABLE IF NOT EXISTS users (
                 id VARCHAR(255) PRIMARY KEY,
                 name VARCHAR(255) NOT NULL,
+                given_name VARCHAR(255) DEFAULT NULL,
                 category VARCHAR(50) DEFAULT NULL,
                 deleted TINYINT DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -53,6 +54,13 @@ async function initDB() {
         if (columns.length === 0) {
             await db.query('ALTER TABLE users ADD COLUMN deleted TINYINT DEFAULT 0 AFTER name');
             console.log('Database migrated: added "deleted" column to users table');
+        }
+
+        // Migration: Add given_name column if it doesn't exist
+        const [gnColumns] = await db.query('SHOW COLUMNS FROM users LIKE "given_name"');
+        if (gnColumns.length === 0) {
+            await db.query('ALTER TABLE users ADD COLUMN given_name VARCHAR(255) DEFAULT NULL AFTER name');
+            console.log('Database migrated: added "given_name" column to users table');
         }
 
         // Migration: Add index on start_time for faster date filtering
