@@ -75,7 +75,10 @@ async function syncWmsData() {
         }
 
         // 2. Connect to MSSQL and fetch data
+        console.log(`[${new Date().toISOString()}] Connecting to MSSQL (${config.server})...`);
         mssqlPool = await sql.connect(config);
+        console.log(`[${new Date().toISOString()}] SUCCESS: Connected to MSSQL.`);
+        
         const result = await mssqlPool.request().query(query);
         const data = result.recordset;
 
@@ -83,15 +86,19 @@ async function syncWmsData() {
 
         // 3. Insert into MySQL
         if (data.length > 0) {
+            let insertedCount = 0;
             for (const row of data) {
-                await mysqlDB.query(
+                const [insertResult] = await mysqlDB.query(
                     'INSERT IGNORE INTO wms_data (id, user_name, skan, date_created_utc, date_end_utc) VALUES (?, ?, ?, ?, ?)',
                     [row.Id, row.UserName, row.Skan, row.DateCreatedUtc, row.DateEndUtc]
                 );
+                if (insertResult.affectedRows > 0) {
+                    insertedCount++;
+                }
             }
-            console.log(`[${new Date().toISOString()}] Successfully synced ${data.length} records to local MySQL.`);
+            console.log(`[${new Date().toISOString()}] Sync complete: ${insertedCount} new records added, ${data.length - insertedCount} skipped (already exist).`);
         } else {
-            console.log(`[${new Date().toISOString()}] No new records to sync.`);
+            console.log(`[${new Date().toISOString()}] No new records found in MSSQL.`);
         }
 
     } catch (err) {
