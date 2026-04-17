@@ -6,6 +6,8 @@ const compression = require('compression');
 const { v4: uuidv4 } = require('uuid');
 const path = require('path');
 const db = require('./db');
+const cron = require('node-cron');
+const { syncWmsData } = require('./sync');
 
 // Validate required environment variables at startup
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -218,4 +220,14 @@ app.get('/api/health', (req, res) => {
 
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
+    
+    // Schedule WMS data sync
+    const syncHour = process.env.MSSQL_SYNC_HOUR || 20;
+    cron.schedule(`0 0 ${syncHour} * * *`, () => {
+        syncWmsData();
+    });
+    console.log(`WMS sync scheduled for ${syncHour}:00 daily.`);
+
+    // Run initial sync on startup
+    syncWmsData();
 });

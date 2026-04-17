@@ -42,6 +42,17 @@ async function initDB() {
             )
         `);
 
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS wms_data (
+                id BIGINT PRIMARY KEY,
+                user_name VARCHAR(255),
+                skan TEXT,
+                date_created_utc DATETIME,
+                date_end_utc DATETIME,
+                synced_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         // Migration: Add category column if it doesn't exist
         const [catColumns] = await db.query('SHOW COLUMNS FROM users LIKE "category"');
         if (catColumns.length === 0) {

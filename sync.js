@@ -1,0 +1,106 @@
+const sql = require('mssql');
+const mysqlDB = require('./db');
+require('dotenv').config();
+
+const config = {
+    user: process.env.MSSQL_USER,
+    password: process.env.MSSQL_PASSWORD,
+    server: process.env.MSSQL_SERVER,
+    database: process.env.MSSQL_DATABASE,
+    port: parseInt(process.env.MSSQL_PORT) || 1433,
+    options: {
+        encrypt: true, // For azure, but good practice
+        trustServerCertificate: true // For local/self-signed certs
+    }
+};
+
+async function syncWmsData() {
+    let mssqlPool;
+    try {
+        console.log(`[${new Date().toISOString()}] Starting WMS data sync...`);
+        
+        // 1. Get the last synced ID from local database
+        const [rows] = await mysqlDB.query('SELECT MAX(id) as lastId FROM wms_data');
+        const lastLocalId = rows[0].lastId;
+        
+        let query;
+        if (lastLocalId) {
+            // Incremental sync
+            query = `
+                SELECT
+                    PPP.Id,
+                    CU.UserName,
+                   CASE
+                          WHEN DD.DocumentType = 7 THEN 'Zbieranie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          WHEN DD.DocumentType = 8 THEN 'Pakowanie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          WHEN DD.DocumentType = 3 AND PPP.ReceiptStillageSpaceCode LIKE 'PACZKI%' THEN 'Zakończenie do kuriera '+ DD.Number
+                          WHEN DD.DocumentType = 3 THEN 'Przesunięcie na biurko / zakończenie zbierania '+ DD.Number
+                          WHEN DD.DocumentType = 2 THEN 'Rozkładanie ' + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          WHEN DD.DocumentType = 22 THEN 'Klient ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          ELSE CAST(DD.DocumentType AS varchar(10))
+                   END AS Skan,
+                   PPP.[DateCreatedUtc],
+                   DATEADD(SECOND, 1, PPP.[DateCreatedUtc]) AS DateEndUtc
+                FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
+                LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
+                LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
+                LEFT JOIN Catalog.Products CP ON CP.Id = PPP.ProductID
+                WHERE PPP.Id > ${lastLocalId}
+                ORDER BY PPP.Id ASC
+            `;
+        } else {
+            // Initial sync (from 2026-04-17)
+            query = `
+                SELECT
+                    PPP.Id,
+                    CU.UserName,
+                   CASE
+                          WHEN DD.DocumentType = 7 THEN 'Zbieranie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          WHEN DD.DocumentType = 8 THEN 'Pakowanie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          WHEN DD.DocumentType = 3 AND PPP.ReceiptStillageSpaceCode LIKE 'PACZKI%' THEN 'Zakończenie do kuriera '+ DD.Number
+                          WHEN DD.DocumentType = 3 THEN 'Przesunięcie na biurko / zakończenie zbierania '+ DD.Number
+                          WHEN DD.DocumentType = 2 THEN 'Rozkładanie ' + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          WHEN DD.DocumentType = 22 THEN 'Klient ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
+                          ELSE CAST(DD.DocumentType AS varchar(10))
+                   END AS Skan,
+                   PPP.[DateCreatedUtc],
+                   DATEADD(SECOND, 1, PPP.[DateCreatedUtc]) AS DateEndUtc
+                FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
+                LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
+                LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
+                LEFT JOIN Catalog.Products CP ON CP.Id = PPP.ProductID
+                WHERE PPP.DateCreatedUtc >= '2026-04-17 00:00:00.000'
+                ORDER BY PPP.Id ASC
+            `;
+        }
+
+        // 2. Connect to MSSQL and fetch data
+        mssqlPool = await sql.connect(config);
+        const result = await mssqlPool.request().query(query);
+        const data = result.recordset;
+
+        console.log(`[${new Date().toISOString()}] Fetched ${data.length} records from MSSQL.`);
+
+        // 3. Insert into MySQL
+        if (data.length > 0) {
+            for (const row of data) {
+                await mysqlDB.query(
+                    'INSERT IGNORE INTO wms_data (id, user_name, skan, date_created_utc, date_end_utc) VALUES (?, ?, ?, ?, ?)',
+                    [row.Id, row.UserName, row.Skan, row.DateCreatedUtc, row.DateEndUtc]
+                );
+            }
+            console.log(`[${new Date().toISOString()}] Successfully synced ${data.length} records to local MySQL.`);
+        } else {
+            console.log(`[${new Date().toISOString()}] No new records to sync.`);
+        }
+
+    } catch (err) {
+        console.error(`[${new Date().toISOString()}] Error during WMS data sync:`, err);
+    } finally {
+        if (mssqlPool) {
+            await mssqlPool.close();
+        }
+    }
+}
+
+module.exports = { syncWmsData };
