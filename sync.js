@@ -15,6 +15,11 @@ const config = {
 };
 
 async function syncWmsData() {
+    if (process.env.MSSQL_SYNC_ENABLED !== 'true') {
+        console.log(`[${new Date().toISOString()}] WMS sync is disabled (MSSQL_SYNC_ENABLED != true).`);
+        return;
+    }
+
     let mssqlPool;
     try {
         console.log(`[${new Date().toISOString()}] Starting WMS data sync...`);
