@@ -46,7 +46,12 @@ async function initDB() {
             CREATE TABLE IF NOT EXISTS wms_data (
                 id BIGINT PRIMARY KEY,
                 user_name VARCHAR(255),
-                skan TEXT,
+                document_number VARCHAR(255),
+                original_number VARCHAR(255),
+                document_type INT,
+                sku VARCHAR(255),
+                quantity INT,
+                receipt_space VARCHAR(255),
                 date_created_utc DATETIME,
                 date_end_utc DATETIME,
                 synced_at DATETIME DEFAULT CURRENT_TIMESTAMP

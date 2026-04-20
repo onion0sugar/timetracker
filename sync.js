@@ -23,52 +23,40 @@ async function syncWmsData() {
         const [rows] = await mysqlDB.query('SELECT MAX(id) as lastId FROM wms_data');
         const lastLocalId = rows[0].lastId;
         
+        // Base query with raw fields
+        const selectFields = `
+            PPP.Id,
+            CU.UserName,
+            DD.Number,
+            DD.OriginalNumber,
+            DD.DocumentType,
+            CP.SKU,
+            PPP.Quantity,
+            PPP.ReceiptStillageSpaceCode,
+            PPP.[DateCreatedUtc],
+            DATEADD(SECOND, 1, PPP.[DateCreatedUtc]) AS DateEndUtc
+        `;
+        const fromJoins = `
+            FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
+            LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
+            LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
+            LEFT JOIN Catalog.Products CP ON CP.Id = PPP.ProductID
+        `;
+
         let query;
         if (lastLocalId) {
             // Incremental sync
             query = `
-                SELECT
-                    PPP.Id,
-                    CU.UserName,
-                   CASE
-                          WHEN DD.DocumentType = 7 THEN 'Zbieranie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          WHEN DD.DocumentType = 8 THEN 'Pakowanie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          WHEN DD.DocumentType = 3 AND PPP.ReceiptStillageSpaceCode LIKE 'PACZKI%' THEN 'Zakończenie do kuriera '+ DD.Number
-                          WHEN DD.DocumentType = 3 THEN 'Przesunięcie na biurko / zakończenie zbierania '+ DD.Number
-                          WHEN DD.DocumentType = 2 THEN 'Rozkładanie ' + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          WHEN DD.DocumentType = 22 THEN 'Klient ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          ELSE CAST(DD.DocumentType AS varchar(10))
-                   END AS Skan,
-                   PPP.[DateCreatedUtc],
-                   DATEADD(SECOND, 1, PPP.[DateCreatedUtc]) AS DateEndUtc
-                FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
-                LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
-                LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
-                LEFT JOIN Catalog.Products CP ON CP.Id = PPP.ProductID
+                SELECT ${selectFields}
+                ${fromJoins}
                 WHERE PPP.Id > ${lastLocalId}
                 ORDER BY PPP.Id ASC
             `;
         } else {
             // Initial sync (from 2026-04-17)
             query = `
-                SELECT
-                    PPP.Id,
-                    CU.UserName,
-                   CASE
-                          WHEN DD.DocumentType = 7 THEN 'Zbieranie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          WHEN DD.DocumentType = 8 THEN 'Pakowanie ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          WHEN DD.DocumentType = 3 AND PPP.ReceiptStillageSpaceCode LIKE 'PACZKI%' THEN 'Zakończenie do kuriera '+ DD.Number
-                          WHEN DD.DocumentType = 3 THEN 'Przesunięcie na biurko / zakończenie zbierania '+ DD.Number
-                          WHEN DD.DocumentType = 2 THEN 'Rozkładanie ' + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          WHEN DD.DocumentType = 22 THEN 'Klient ' + DD.OriginalNumber + ' | ' + DD.Number + ' | ' + CP.SKU + ' x' + CAST(CAST(PPP.Quantity AS INT) AS VARCHAR(20))
-                          ELSE CAST(DD.DocumentType AS varchar(10))
-                   END AS Skan,
-                   PPP.[DateCreatedUtc],
-                   DATEADD(SECOND, 1, PPP.[DateCreatedUtc]) AS DateEndUtc
-                FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
-                LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
-                LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
-                LEFT JOIN Catalog.Products CP ON CP.Id = PPP.ProductID
+                SELECT ${selectFields}
+                ${fromJoins}
                 WHERE PPP.DateCreatedUtc >= '2026-04-17 00:00:00.000'
                 ORDER BY PPP.Id ASC
             `;
@@ -89,8 +77,30 @@ async function syncWmsData() {
             let insertedCount = 0;
             for (const row of data) {
                 const [insertResult] = await mysqlDB.query(
-                    'INSERT IGNORE INTO wms_data (id, user_name, skan, date_created_utc, date_end_utc) VALUES (?, ?, ?, ?, ?)',
-                    [row.Id, row.UserName, row.Skan, row.DateCreatedUtc, row.DateEndUtc]
+                    `INSERT IGNORE INTO wms_data (
+                        id, 
+                        user_name, 
+                        document_number, 
+                        original_number, 
+                        document_type, 
+                        sku, 
+                        quantity, 
+                        receipt_space, 
+                        date_created_utc, 
+                        date_end_utc
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                    [
+                        row.Id, 
+                        row.UserName, 
+                        row.Number, 
+                        row.OriginalNumber, 
+                        row.DocumentType, 
+                        row.SKU, 
+                        row.Quantity, 
+                        row.ReceiptStillageSpaceCode, 
+                        row.DateCreatedUtc, 
+                        row.DateEndUtc
+                    ]
                 );
                 if (insertResult.affectedRows > 0) {
                     insertedCount++;
