@@ -371,7 +371,8 @@ async function initUserSwitch(id) {
         const response = await fetch(`/api/users/${id}`);
         const data = await response.json();
 
-        document.getElementById('userNameHeading').textContent = data.user.name;
+        const displayName = (data.user.given_name && data.user.given_name.trim() !== '') ? data.user.given_name : data.user.name;
+        document.getElementById('userNameHeading').textContent = displayName;
 
         // Find most recent active log
         const latest = data.logs[0];

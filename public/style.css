@@ -79,17 +79,7 @@ header {
 }
 
 .brand-sk {
-    background: var(--primary);
-    color: white;
-    font-weight: 900;
-    font-size: 1.5rem;
-    width: 45px;
-    height: 45px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(242, 114, 0, 0.4);
+    display: none; /* Removed SK as requested */
 }
 
 .brand-timetracker {
@@ -97,10 +87,7 @@ header {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    background: linear-gradient(to right, #fff, #888);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
+    color: var(--primary); /* Timetracker now orange */
 }
 
 .admin-controls {
@@ -403,11 +390,11 @@ button:active {
 }
 
 .tile-btn.active {
-    border-color: var(--primary);
-    box-shadow: 0 0 30px var(--primary);
-    filter: brightness(1.1);
+    border-color: #ff3e3e; /* Standard Red */
+    box-shadow: 0 0 30px rgba(255, 62, 62, 0.6);
+    filter: brightness(1.2);
     color: white;
-    border-width: 4px;
+    border-width: 5px;
     transform: scale(1.05);
 }
 
