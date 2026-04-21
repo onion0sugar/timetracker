@@ -1,7 +1,9 @@
 :root {
-    --primary: #f27200; /* Serwis Kop Orange */
+    --primary: #f27200;
+    /* Serwis Kop Orange */
     --primary-hover: #d66400;
-    --secondary: #0c376d; /* Serwis Kop Navy */
+    --secondary: #0c376d;
+    /* Serwis Kop Navy */
     --secondary-hover: #092a54;
     --bg-dark: #0a0f1d;
     --glass: rgba(12, 55, 109, 0.15);
@@ -79,7 +81,8 @@ header {
 }
 
 .brand-sk {
-    display: none; /* Removed SK as requested */
+    display: none;
+    /* Removed SK as requested */
 }
 
 .brand-timetracker {
@@ -87,7 +90,8 @@ header {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 1px;
-    color: var(--primary); /* Timetracker now orange */
+    color: var(--primary);
+    /* Timetracker now orange */
 }
 
 .admin-controls {
@@ -150,7 +154,7 @@ button {
     letter-spacing: 1px;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 button:hover {
@@ -390,10 +394,11 @@ button:active {
 }
 
 .tile-btn.active {
-    border-color: #ff3e3e; /* Standard Red */
+    border-color: #ff0000;
+    /* Standard Red */
     box-shadow: 0 0 30px rgba(255, 62, 62, 0.6);
     filter: brightness(1.2);
-    color: white;
+    color: rgb(255, 0, 0);
     border-width: 5px;
     transform: scale(1.05);
 }
