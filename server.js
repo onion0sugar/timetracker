@@ -29,6 +29,25 @@ function broadcastUpdate(data = {}) {
     }
 }
 
+async function resetAllToOff() {
+    console.log('[CRON] Executing automated "OFF" reset for all users...');
+    try {
+        // End all current active sessions in the database
+        await db.query(`
+            UPDATE activity_logs 
+            SET end_time = NOW(), 
+                duration_seconds = TIMESTAMPDIFF(SECOND, start_time, NOW()) 
+            WHERE end_time IS NULL
+        `);
+
+        // Broadcast to all clients to refresh UI
+        broadcastUpdate({ type: 'RESET_ALL' });
+        console.log('[CRON] All active sessions closed successfully.');
+    } catch (err) {
+        console.error('[CRON] Failed to reset all states to OFF:', err);
+    }
+}
+
 app.use(compression());
 app.use(cors());
 app.use(express.json());
@@ -241,6 +260,16 @@ async function startServer() {
 
             // 4. Run initial sync on startup
             syncWmsData().catch(err => console.error('Initial sync failed:', err));
+
+            // 5. Schedule automated OFF reset
+            const autoOffTime = process.env.AUTO_OFF_TIME || '23:59';
+            const [offHour, offMin] = autoOffTime.split(':');
+            if (offHour !== undefined && offMin !== undefined) {
+                cron.schedule(`0 ${offMin} ${offHour} * * *`, () => {
+                    resetAllToOff().catch(err => console.error('Scheduled reset failed:', err));
+                });
+                console.log(`Automated OFF reset scheduled for ${autoOffTime} daily.`);
+            }
         });
     } catch (err) {
         console.error('FATAL: Failed to initialize database:', err);

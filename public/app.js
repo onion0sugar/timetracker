@@ -402,7 +402,7 @@ function startUserRefresh(id) {
 
     // Real-time refresh via SSE
     connectSSE((data) => {
-        if (!data || data.userId === id) {
+        if (!data || data.userId === id || data.type === 'RESET_ALL') {
             initUserSwitch(id);
         }
     });
