@@ -99,6 +99,6 @@ async function initDB() {
     }
 }
 
-initDB();
+db.initDB = initDB;
 
 module.exports = db;

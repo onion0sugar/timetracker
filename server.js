@@ -218,16 +218,34 @@ app.get('/api/health', (req, res) => {
     });
 });
 
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
-    
-    // Schedule WMS data sync
-    const syncHour = process.env.MSSQL_SYNC_HOUR || 20;
-    cron.schedule(`0 0 ${syncHour} * * *`, () => {
-        syncWmsData();
-    });
-    console.log(`WMS sync scheduled for ${syncHour}:00 daily.`);
-
-    // Run initial sync on startup
-    syncWmsData();
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
 });
+
+async function startServer() {
+    try {
+        // 1. Initialize database (create tables, migrations)
+        await db.initDB();
+
+        // 2. Start Express server
+        app.listen(PORT, () => {
+            console.log(`Server running at http://localhost:${PORT}`);
+            
+            // 3. Schedule WMS data sync
+            const syncHour = process.env.MSSQL_SYNC_HOUR || 20;
+            cron.schedule(`0 0 ${syncHour} * * *`, () => {
+                syncWmsData().catch(err => console.error('Scheduled sync failed:', err));
+            });
+            console.log(`WMS sync scheduled for ${syncHour}:00 daily.`);
+
+            // 4. Run initial sync on startup
+            syncWmsData().catch(err => console.error('Initial sync failed:', err));
+        });
+    } catch (err) {
+        console.error('FATAL: Failed to initialize database:', err);
+        process.exit(1);
+    }
+}
+
+startServer();
