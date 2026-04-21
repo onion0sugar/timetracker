@@ -1,18 +1,20 @@
 :root {
-    --primary: #f0932b;
-    --secondary: #eb4d4b;
-    --bg-dark: #130f40;
-    --glass: rgba(255, 255, 255, 0.1);
-    --glass-border: rgba(255, 255, 255, 0.2);
+    --primary: #f27200; /* Serwis Kop Orange */
+    --primary-hover: #d66400;
+    --secondary: #0c376d; /* Serwis Kop Navy */
+    --secondary-hover: #092a54;
+    --bg-dark: #0a0f1d;
+    --glass: rgba(12, 55, 109, 0.15);
+    --glass-border: rgba(255, 255, 255, 0.1);
+    --accent-glow: rgba(242, 114, 0, 0.2);
     --text: #ffffff;
-    --off: #95a5a6;
-    --pakowanie: #3498db;
-    --zbieranie: #2ecc71;
-    /* Zmienione na zielony */
-    --przerwa: #e67e22;
-    --rozkladanie: #9b59b6;
-    --inne: #f1c40f;
-    /* Nowe Inne w kolorze starego zbierania */
+    --text-dim: rgba(255, 255, 255, 0.7);
+    --off: #576574;
+    --pakowanie: #2980b9;
+    --zbieranie: #27ae60;
+    --przerwa: #d35400;
+    --rozkladanie: #8e44ad;
+    --inne: #f39c12;
 }
 
 * {
@@ -28,7 +30,7 @@ option {
 
 
 body {
-    background: radial-gradient(circle at top left, var(--bg-dark), #1e1b4b);
+    background: #0a0f1d radial-gradient(circle at top left, var(--secondary), #0a0f1d);
     color: var(--text);
     min-height: 100vh;
     display: flex;
@@ -40,14 +42,13 @@ body {
 .container {
     width: 95%;
     margin: 30px;
-    /* max-width: 1000px; */
-    padding: 2rem;
-    background: var(--glass);
-    backdrop-filter: blur(15px);
+    padding: 2.5rem;
+    background: rgba(10, 15, 29, 0.8);
+    backdrop-filter: blur(20px);
     border: 1px solid var(--glass-border);
-    border-radius: 24px;
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
-    animation: fadeIn 0.8s ease-out;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 15px var(--accent-glow);
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 @keyframes fadeIn {
@@ -62,15 +63,70 @@ body {
     }
 }
 
-h1 {
-    text-align: center;
-    margin-bottom: 2rem;
-    font-weight: 700;
-    letter-spacing: -1px;
-    background: linear-gradient(to right, #ffffff, #a5a5a5);
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--glass-border);
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-sk {
+    background: var(--primary);
+    color: white;
+    font-weight: 900;
+    font-size: 1.5rem;
+    width: 45px;
+    height: 45px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(242, 114, 0, 0.4);
+}
+
+.brand-timetracker {
+    font-size: 1.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    background: linear-gradient(to right, #fff, #888);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
+}
+
+.admin-controls {
+    display: flex;
+    gap: 1rem;
+}
+
+.btn-danger-soft {
+    background: rgba(235, 77, 75, 0.1) !important;
+    color: #eb4d4b !important;
+    border: 1px solid rgba(235, 77, 75, 0.2) !important;
+}
+
+.btn-danger-soft:hover {
+    background: rgba(235, 77, 75, 0.2) !important;
+    box-shadow: 0 4px 15px rgba(235, 77, 75, 0.2) !important;
+}
+
+.btn-add-user {
+    background: #27ae60 !important;
+    min-width: 200px;
+}
+
+.btn-add-user:hover {
+    background: #2ecc71 !important;
+    box-shadow: 0 6px 20px rgba(39, 174, 96, 0.4) !important;
 }
 
 /* User Form */
@@ -97,19 +153,27 @@ input:focus {
 }
 
 button {
-    padding: 12px 24px;
-    background: linear-gradient(45deg, var(--primary), var(--secondary));
+    padding: 12px 28px;
+    background: var(--primary);
     border: none;
-    border-radius: 12px;
+    border-radius: 8px;
     color: white;
-    font-weight: 600;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
 }
 
 button:hover {
+    background: var(--primary-hover);
     transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(240, 147, 43, 0.4);
+    box-shadow: 0 6px 20px rgba(242, 114, 0, 0.4);
+}
+
+button:active {
+    transform: translateY(0);
 }
 
 /* User Cards */
@@ -208,24 +272,26 @@ button:hover {
 }
 
 .filter-btn {
-    padding: 8px 16px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    padding: 10px 20px;
+    background: var(--secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
     color: white;
     font-size: 0.85rem;
+    font-weight: 600;
     white-space: nowrap;
     cursor: pointer;
     transition: 0.2s;
 }
 
 .filter-btn:hover {
-    background: rgba(255, 255, 255, 0.1);
+    background: var(--secondary-hover);
 }
 
 .filter-btn.active {
     background: var(--primary);
     border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(242, 114, 0, 0.3);
 }
 
 /* 4-Position Switch */
@@ -269,6 +335,7 @@ button:hover {
     background: var(--primary);
     border-radius: 34px;
     transition: transform 0.4s cubic-bezier(0.5, -0.03, 0.47, 0.99), background 0.3s;
+    box-shadow: 0 0 20px rgba(242, 114, 0, 0.4);
 }
 
 .pos0 {
@@ -336,11 +403,12 @@ button:hover {
 }
 
 .tile-btn.active {
-    border-color: rgb(255 3 3);
-    box-shadow: 0 0 30px rgb(255 3 3);
+    border-color: var(--primary);
+    box-shadow: 0 0 30px var(--primary);
     filter: brightness(1.1);
-    color: rgb(255 3 3);
-    border-width: 5px;
+    color: white;
+    border-width: 4px;
+    transform: scale(1.05);
 }
 
 /* Specific Tile Colors */
@@ -372,10 +440,12 @@ button:hover {
 
 /* Timer */
 .timer-display {
-    font-size: 4rem;
-    font-weight: 800;
+    font-size: 5rem;
+    font-weight: 900;
     font-variant-numeric: tabular-nums;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    color: var(--primary);
+    text-shadow: 0 4px 15px rgba(242, 114, 0, 0.3);
+    margin-bottom: 1rem;
 }
 
 /* Modal */
@@ -619,13 +689,28 @@ body.admin-mode #adminLoginBtn {
         width: calc(100% - 10px);
     }
 
-    h1 {
-        font-size: 1.5rem;
-        margin-bottom: 1rem;
+    header {
+        flex-direction: column;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+    .brand-header {
+        justify-content: center;
+    }
+
+    .admin-controls {
+        width: 100%;
+        flex-direction: column;
+    }
+
+    .admin-controls button {
+        width: 100%;
     }
 
     .timer-display {
-        font-size: 2.2rem;
+        font-size: 2.8rem;
     }
 
     .switch-rack {

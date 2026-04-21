@@ -20,15 +20,19 @@
     </div>
 
     <div id="mainContainer" class="container" style="display: none;">
-        <header style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-            <h1>Dashboard</h1>
-            <button id="adminLoginBtn" class="btn-secondary" style="margin-bottom: 0;">Zaloguj do serwisu</button>
-            <button id="adminLogoutBtn" class="btn-secondary admin-only"
-                style="margin-bottom: 0; background: rgba(235, 77, 75, 0.2); color: #eb4d4b;">Wyloguj</button>
+        <header>
+            <div class="brand-header">
+                <span class="brand-sk">SK</span>
+                <span class="brand-timetracker">TimeTracker</span>
+            </div>
+            <div class="admin-controls">
+                <button id="adminLoginBtn" class="btn-secondary">Zaloguj do serwisu</button>
+                <button id="adminLogoutBtn" class="btn-secondary admin-only btn-danger-soft">Wyloguj</button>
+            </div>
         </header>
 
         <div class="admin-only" style="margin-bottom: 2rem;">
-            <button id="addUserBtn" class="btn-primary" style="min-width: 200px; background: #2ecc71; border-color: #27ae60;">+ Dodaj Użytkownika</button>
+            <button id="addUserBtn" class="btn-add-user">+ Dodaj Użytkownika</button>
         </div>
 
         <!-- Filter Bar -->
@@ -70,7 +74,7 @@
                 </select>
             </div>
             <div class="modal-actions">
-                <button id="confirmEditBtn" class="btn-danger" style="background: #3498db; border-color: #2980b9;">Zapisz zmiany</button>
+                <button id="confirmEditBtn">Zapisz zmiany</button>
                 <button id="cancelEditBtn" class="btn-secondary">Anuluj</button>
             </div>
         </div>
