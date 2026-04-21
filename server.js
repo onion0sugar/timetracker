@@ -262,10 +262,10 @@ async function startServer() {
             syncWmsData().catch(err => console.error('Initial sync failed:', err));
 
             // 5. Schedule automated OFF reset
-            const autoOffTime = process.env.AUTO_OFF_TIME || '23:59';
+            const autoOffTime = (process.env.AUTO_OFF_TIME || '23:59').trim();
             const [offHour, offMin] = autoOffTime.split(':');
             if (offHour !== undefined && offMin !== undefined) {
-                cron.schedule(`0 ${offMin} ${offHour} * * *`, () => {
+                cron.schedule(`0 ${offMin.trim()} ${offHour.trim()} * * *`, () => {
                     resetAllToOff().catch(err => console.error('Scheduled reset failed:', err));
                 });
                 console.log(`Automated OFF reset scheduled for ${autoOffTime} daily.`);
