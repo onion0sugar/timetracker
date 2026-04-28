@@ -7,6 +7,7 @@ let isViewAuthenticated = sessionStorage.getItem('isViewAuthenticated') === 'tru
 let allUsers = [];
 let currentFilter = 'all';
 let userToEdit = null;
+let currentStateName = null;
 
 // Helper to normalize Polish state names for CSS classes
 function getStateClass(state) {
@@ -207,6 +208,8 @@ async function deleteUser(id) {
         }
     }
 }
+
+
 
 function adminLogin() {
     const modal = document.getElementById('adminModal');
@@ -411,13 +414,22 @@ function startUserRefresh(id) {
 async function setPos(pos, state) {
     const slider = document.getElementById('slider');
     const stateDisplay = document.getElementById('currentStateName');
+    
+    // 1. Guard clause: prevents redundant API calls
+    if (state === currentStateName) return;
 
-    // UI Update
+    // Store old state in case we need to roll back on error
+    const previousState = currentStateName;
+    const previousPosClass = slider.className;
+
+    // 2. Immediate UI Update (Optimistic)
     slider.className = `switch-slider pos${pos}`;
     stateDisplay.textContent = `Stan: ${state}`;
     updateTiles(state);
+    
+    // Update global state immediately to prevent double-clicks
+    currentStateName = state;
 
-    // API Update
     try {
         const response = await fetch('/api/logs', {
             method: 'POST',
@@ -425,17 +437,29 @@ async function setPos(pos, state) {
             body: JSON.stringify({ userId: currentUserId, state })
         });
 
-        if (response.ok) {
-            if (state === 'OFF') {
-                stopTimer();
-            } else {
-                startTimer(new Date());
-            }
-            // Refresh history
-            initUserSwitch(currentUserId);
+        if (!response.ok) throw new Error('Network response was not ok');
+
+        // 3. Logic following successful DB update
+        if (state === 'OFF') {
+            stopTimer();
+        } else {
+            // Recommendation: use a server-provided timestamp if precision matters
+            startTimer(new Date());
         }
+        
+        // Refresh history
+        initUserSwitch(currentUserId);
+
     } catch (err) {
         console.error('Error setting state:', err);
+        
+        // 4. Rollback UI on failure
+        currentStateName = previousState;
+        slider.className = previousPosClass;
+        stateDisplay.textContent = `Stan: ${previousState}`;
+        updateTiles(previousState);
+        
+        showToast("Wystąpił błąd przy zmianie stanu. Spróbuj ponownie.", "error");
     }
 }
 
@@ -445,6 +469,7 @@ function setUI(pos, state, updateApi = true) {
     if (slider) slider.className = `switch-slider pos${pos}`;
     if (stateDisplay) stateDisplay.textContent = `Stan: ${state}`;
     updateTiles(state);
+    currentStateName = state;
 }
 
 function updateTiles(activeState) {
