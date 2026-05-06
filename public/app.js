@@ -374,6 +374,31 @@ async function initUserSwitch(id) {
         const response = await fetch(`/api/users/${id}`);
         const data = await response.json();
 
+        if (!response.ok) {
+            // Zamiana zawartości kontenera z przełącznikiem na komunikat o błędzie
+            const switchContainer = document.querySelector('.switch-container');
+            if (switchContainer) {
+                switchContainer.innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <h3 style="color: #eb4d4b; margin-bottom: 1rem;">Brak dostępu</h3>
+                        <p style="font-size: 1.1rem;">${data.error || 'Użytkownik nie istnieje lub został usunięty.'}</p>
+                        <p style="opacity: 0.7; font-size: 0.9rem; margin-top: 1rem;">Skonsultuj się z administratorem.</p>
+                    </div>
+                `;
+            }
+            
+            const heading = document.getElementById('userNameHeading');
+            if (heading) heading.textContent = 'Konto niedostępne';
+            
+            const logHistory = document.getElementById('logHistory');
+            if (logHistory) logHistory.innerHTML = '';
+            
+            stopTimer();
+            if (window.userRefreshInterval) clearInterval(window.userRefreshInterval);
+            if (window.appSSE) window.appSSE.close();
+            return;
+        }
+
         const displayName = (data.user.given_name && data.user.given_name.trim() !== '') ? data.user.given_name : data.user.name;
         document.getElementById('userNameHeading').textContent = displayName;
 

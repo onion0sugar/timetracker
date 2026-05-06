@@ -153,7 +153,14 @@ app.get('/api/users/:id', async (req, res) => {
     try {
         const [users] = await db.query('SELECT * FROM users WHERE id = ?', [req.params.id]);
         const user = users[0];
-        if (!user) return res.status(404).json({ error: 'User not found' });
+        
+        if (!user) {
+            return res.status(404).json({ error: 'Użytkownik nie istnieje.' });
+        }
+        
+        if (user.deleted) {
+            return res.status(403).json({ error: 'Użytkownik został usunięty. Skonsultuj się z administratorem.' });
+        }
 
         const [logs] = await db.query('SELECT * FROM activity_logs WHERE user_id = ? ORDER BY start_time DESC LIMIT 3', [req.params.id]);
         res.json({ user, logs });
