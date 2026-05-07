@@ -122,6 +122,21 @@ async function syncWmsData() {
         if (mssqlPool) {
             await mssqlPool.close();
         }
+
+        // 4. Cleanup old records based on retention days
+        try {
+            const retentionDays = parseInt(process.env.WMS_DATA_RETENTION_DAYS, 10);
+            if (!isNaN(retentionDays) && retentionDays > 0) {
+                console.log(`[${new Date().toISOString()}] Cleaning up WMS data older than ${retentionDays} days...`);
+                const [deleteResult] = await mysqlDB.query(
+                    `DELETE FROM wms_data WHERE date_created_utc < DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY)`,
+                    [retentionDays]
+                );
+                console.log(`[${new Date().toISOString()}] Cleanup complete: deleted ${deleteResult.affectedRows} old records.`);
+            }
+        } catch (cleanupErr) {
+            console.error(`[${new Date().toISOString()}] Error during WMS data cleanup:`, cleanupErr);
+        }
     }
 }
 
