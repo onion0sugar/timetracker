@@ -58,11 +58,12 @@ async function syncWmsData() {
                 ORDER BY PPP.Id ASC
             `;
         } else {
-            // Initial sync (from 2026-04-17)
+            // Initial sync based on retention days
+            const retentionDays = parseInt(process.env.WMS_DATA_RETENTION_DAYS, 10) || 7;
             query = `
                 SELECT ${selectFields}
                 ${fromJoins}
-                WHERE PPP.DateCreatedUtc >= '2026-04-17 00:00:00.000'
+                WHERE PPP.DateCreatedUtc >= DATEADD(DAY, -${retentionDays}, GETUTCDATE())
                 ORDER BY PPP.Id ASC
             `;
         }
@@ -127,12 +128,17 @@ async function syncWmsData() {
         try {
             const retentionDays = parseInt(process.env.WMS_DATA_RETENTION_DAYS, 10);
             if (!isNaN(retentionDays) && retentionDays > 0) {
-                console.log(`[${new Date().toISOString()}] Cleaning up WMS data older than ${retentionDays} days...`);
+                console.log(`[${new Date().toISOString()}] Starting cleanup mechanism for WMS data older than ${retentionDays} days...`);
                 const [deleteResult] = await mysqlDB.query(
                     `DELETE FROM wms_data WHERE date_created_utc < DATE_SUB(UTC_TIMESTAMP(), INTERVAL ? DAY)`,
                     [retentionDays]
                 );
-                console.log(`[${new Date().toISOString()}] Cleanup complete: deleted ${deleteResult.affectedRows} old records.`);
+                
+                if (deleteResult.affectedRows > 0) {
+                    console.log(`[${new Date().toISOString()}] SUCCESS: Found and deleted ${deleteResult.affectedRows} old records.`);
+                } else {
+                    console.log(`[${new Date().toISOString()}] No records older than ${retentionDays} days found. Nothing to delete.`);
+                }
             }
         } catch (cleanupErr) {
             console.error(`[${new Date().toISOString()}] Error during WMS data cleanup:`, cleanupErr);
