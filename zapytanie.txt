@@ -1,0 +1,31 @@
+SELECT PPP.[Id]
+      ,[PackageId]
+      ,DD.Number
+      ,DD.DocumentType
+      ,[ProductId]
+      ,[Quantity]
+      ,[DocumentPositionId]
+      ,[IssueStillageSpaceCode]
+      ,[ReceiptStillageSpaceCode]
+      ,PPP.[DateCreatedUtc]
+      ,PPP.[DateModifiedUtc]
+      ,PPP.[CreatedBy]
+      ,PPP.[ModifiedBy]
+      ,[DocumentId]
+  FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
+  LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
+  LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
+  WHERE PPP.DateCreatedUtc >= '2026-06-30 06:00:00'
+
+
+
+LEGENDA
+DocumentType:
+2 - Rozkładanie
+7 - Zbieranie
+8 - Pakowanie
+
+3 - Nie bierzemy pod uwagę
+22 - Nie bierzemy pod uwagę
+
+Cała reszta to Inne.

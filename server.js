@@ -8,6 +8,8 @@ const path = require('path');
 const db = require('./db');
 const cron = require('node-cron');
 const { syncWmsData } = require('./sync');
+const { verifySwitchStates } = require('./verification');
+const { sendMismatchNotification } = require('./mailer');
 
 // Validate required environment variables at startup
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
@@ -244,6 +246,11 @@ app.get('/api/health', (req, res) => {
     });
 });
 
+// --- State verification deduplication ---
+// Track which mismatches we've already notified about to avoid spam
+// Map<userId, { expectedState, currentState }>
+const sentMismatches = new Map();
+
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (reason, promise) => {
     console.error('Unhandled Rejection at:', promise, 'reason:', reason);
@@ -268,7 +275,46 @@ async function startServer() {
             // 4. Run initial sync on startup
             syncWmsData().catch(err => console.error('Initial sync failed:', err));
 
-            // 5. Schedule automated OFF reset
+            // 5. Schedule state verification every 30 seconds
+            cron.schedule('*/30 * * * * *', async () => {
+                try {
+                    const mismatches = await verifySwitchStates(30);
+                    const newMismatches = [];
+
+                    for (const m of mismatches) {
+                        const prev = sentMismatches.get(m.userId);
+                        // Notify only if this is a NEW mismatch or the state CHANGED
+                        if (!prev || prev.expectedState !== m.expectedState || prev.currentState !== m.currentState) {
+                            newMismatches.push(m);
+                            sentMismatches.set(m.userId, {
+                                expectedState: m.expectedState,
+                                currentState: m.currentState
+                            });
+                        }
+                    }
+
+                    // Remove resolved mismatches (user fixed their state)
+                    const mismatchedIds = new Set(mismatches.map(m => m.userId));
+                    for (const [userId] of sentMismatches) {
+                        if (!mismatchedIds.has(userId)) {
+                            sentMismatches.delete(userId);
+                        }
+                    }
+
+                    if (newMismatches.length > 0) {
+                        console.log(`[VERIFICATION] ${newMismatches.length} new/changed mismatch(es)`);
+                        // Send email notification (fire-and-forget — don't block the cron tick)
+                        sendMismatchNotification(newMismatches).catch(err =>
+                            console.error('[VERIFICATION] Email notification failed:', err.message)
+                        );
+                    }
+                } catch (err) {
+                    console.error('[VERIFICATION] Cron error:', err);
+                }
+            });
+            console.log('State verification scheduled every 30 seconds.');
+
+            // 6. Schedule automated OFF reset
             const autoOffTime = (process.env.AUTO_OFF_TIME || '23:59').trim();
             const [offHour, offMin] = autoOffTime.split(':');
             if (offHour !== undefined && offMin !== undefined) {

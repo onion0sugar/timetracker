@@ -24,34 +24,6 @@ function getStateClass(state) {
         .replace(/ż/g, 'z');
 }
 
-// --- Toast System ---
-function showToast(message, type = 'info') {
-    const container = document.getElementById('toast-container');
-    if (!container) return;
-
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type}`;
-
-    const icons = {
-        success: '✅',
-        error: '❌',
-        info: 'ℹ️'
-    };
-
-    toast.innerHTML = `
-        <span class="toast-icon">${icons[type] || '🔔'}</span>
-        <span class="toast-msg">${message}</span>
-    `;
-
-    container.appendChild(toast);
-
-    // Auto-remove after 3.5s
-    setTimeout(() => {
-        toast.classList.add('hide');
-        setTimeout(() => toast.remove(), 300);
-    }, 3500);
-}
-
 // --- Dashboard Functions ---
 
 async function fetchUsers() {
@@ -140,7 +112,7 @@ function copyUserLink(id) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
         // Modern approach (requires HTTPS)
         navigator.clipboard.writeText(url).then(() => {
-            showToast('Link skopiowany!', 'success');
+            // Link skopiowany
         }).catch(err => {
             console.error('Clipboard API failed, trying fallback:', err);
             fallbackCopyText(url);
@@ -167,13 +139,13 @@ function fallbackCopyText(text) {
     try {
         const successful = document.execCommand('copy');
         if (successful) {
-            showToast('Link skopiowany!', 'success');
+            // Link skopiowany
         } else {
-            showToast('Nie udało się skopiować linku', 'error');
+            alert('Nie udało się skopiować linku');
         }
     } catch (err) {
         console.error('Fallback copy failed:', err);
-        showToast('Błąd podczas kopiowania', 'error');
+        alert('Błąd podczas kopiowania');
     }
 
     document.body.removeChild(textArea);
@@ -186,7 +158,7 @@ async function deleteUser(id) {
         try {
             const pass = sessionStorage.getItem('adminPassword');
             if (!pass) {
-                showToast('Błąd: brak hasła w sesji', 'error');
+                alert('Błąd: brak hasła w sesji');
                 return;
             }
 
@@ -197,11 +169,11 @@ async function deleteUser(id) {
             });
 
             if (response.ok) {
-                showToast('Użytkownik usunięty', 'success');
+                // Użytkownik usunięty
                 fetchUsers();
             } else {
                 const errData = await response.json();
-                showToast('Błąd: ' + errData.error, 'error');
+                alert('Błąd: ' + errData.error);
             }
         } catch (err) {
             console.error('Error deleting user:', err);
@@ -236,11 +208,11 @@ async function confirmLogin() {
             closeAdminModal();
             updateAdminUI();
         } else {
-            showToast("Błędne hasło administratora!", "error");
+            alert("Błędne hasło administratora!");
         }
     } catch (err) {
         console.error('Login error:', err);
-        showToast("Błąd połączenia z serwerem", "error");
+        alert("Błąd połączenia z serwerem");
     }
 }
 
@@ -279,7 +251,7 @@ async function saveUserChanges() {
     const password = sessionStorage.getItem('adminPassword');
 
     if (!name) {
-        showToast('Login WMS nie może być pusty', 'error');
+        alert('Login WMS nie może być pusty');
         return;
     }
 
@@ -299,16 +271,16 @@ async function saveUserChanges() {
         });
 
         if (response.ok) {
-            showToast(userToEdit ? 'Użytkownik zaktualizowany!' : 'Użytkownik dodany!', 'success');
+            // Użytkownik zapisany
             closeEditModal();
             fetchUsers();
         } else {
             const err = await response.json();
-            showToast('Błąd: ' + err.error, 'error');
+            alert('Błąd: ' + err.error);
         }
     } catch (err) {
         console.error('Save error:', err);
-        showToast('Błąd połączenia z serwerem', 'error');
+        alert('Błąd połączenia z serwerem');
     }
 }
 
@@ -335,11 +307,11 @@ async function viewLogin() {
             updateViewUI();
             startDashboardRefresh();
         } else {
-            showToast("Błędne hasło dostępu!", "error");
+            alert("Błędne hasło dostępu!");
         }
     } catch (err) {
         console.error('Login error:', err);
-        showToast("Błąd połączenia z serwerem", "error");
+        alert("Błąd połączenia z serwerem");
     }
 }
 
@@ -355,6 +327,8 @@ function updateViewUI() {
         if (container) container.style.display = 'none';
     }
 }
+
+// Old modal logic removed (confirmDelete, closeDeleteModal)
 
 // Old modal logic removed (confirmDelete, closeDeleteModal)
 
@@ -484,7 +458,7 @@ async function setPos(pos, state) {
         stateDisplay.textContent = `Stan: ${previousState}`;
         updateTiles(previousState);
         
-        showToast("Wystąpił błąd przy zmianie stanu. Spróbuj ponownie.", "error");
+        alert("Wystąpił błąd przy zmianie stanu. Spróbuj ponownie.");
     }
 }
 
@@ -644,6 +618,13 @@ function connectSSE(onUpdate) {
         } catch (err) {
             console.error('Error parsing SSE data:', err);
         }
+
+        // Handle RESET_ALL — refresh everything
+        if (data && data.type === 'RESET_ALL') {
+            if (typeof onUpdate === 'function') onUpdate(data);
+            return;
+        }
+
         if (typeof onUpdate === 'function') onUpdate(data);
     });
 
