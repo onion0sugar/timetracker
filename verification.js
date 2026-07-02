@@ -40,6 +40,11 @@ async function verifySwitchStates(lookbackSeconds = 30) {
         return [];
     }
 
+    const excludeUsersStr = process.env.VERIFICATION_EXCLUDE_USERS || '';
+    const excludedUsers = excludeUsersStr.split(',')
+        .map(u => u.trim().toLowerCase())
+        .filter(u => u.length > 0);
+
     let mssqlPool;
     try {
         mssqlPool = await sql.connect(config);
@@ -75,6 +80,10 @@ async function verifySwitchStates(lookbackSeconds = 30) {
         for (const scan of scans) {
             const userName = scan.UserName;
             if (!userName) continue;
+
+            if (excludedUsers.includes(userName.toLowerCase())) {
+                continue;
+            }
 
             if (!userLatestScan[userName]) {
                 userLatestScan[userName] = {

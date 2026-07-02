@@ -1,4 +1,4 @@
-SELECT PPP.[Id]
+SELECT TOP 1000 PPP.[Id]
       ,[PackageId]
       ,DD.Number
       ,DD.DocumentType
