@@ -40,11 +40,6 @@ async function verifySwitchStates(lookbackSeconds = 30) {
         return [];
     }
 
-    const excludeUsersStr = process.env.VERIFICATION_EXCLUDE_USERS || '';
-    const excludedUsers = excludeUsersStr.split(',')
-        .map(u => u.trim().toLowerCase())
-        .filter(u => u.length > 0);
-
     let mssqlPool;
     try {
         // Clear previous mismatches from the database before starting verification
@@ -100,7 +95,7 @@ async function verifySwitchStates(lookbackSeconds = 30) {
         let skippedMismatchesCount = 0;
         for (const [userName, data] of Object.entries(userLatestScan)) {
             const [users] = await mysqlDB.query(
-                'SELECT id, name, given_name FROM users WHERE name = ? AND deleted = 0',
+                'SELECT id, name, given_name, exclude_from_mismatch_alerts FROM users WHERE name = ? AND deleted = 0',
                 [userName]
             );
 
@@ -120,7 +115,7 @@ async function verifySwitchStates(lookbackSeconds = 30) {
             const isType3Compatible = data.documentType === 3 && workStates.includes(currentState);
 
             if (currentState !== data.expectedState && !isType3Compatible) {
-                const isExcluded = excludedUsers.includes(userName.toLowerCase());
+                const isExcluded = user.exclude_from_mismatch_alerts === 1;
                 if (isExcluded) {
                     skippedMismatchesCount++;
                     console.log(`[VERIFICATION] Niezgodność (POMINIĘTO): Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState} (użytkownik na liście pominiętych)`);

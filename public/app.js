@@ -102,6 +102,7 @@ function addUser() {
     document.getElementById('editUserGivenNameInput').value = '';
     document.getElementById('editUserNameInput').value = '';
     document.getElementById('editUserCategoryInput').value = '';
+    document.getElementById('editUserExcludeNotificationsInput').checked = false;
     document.getElementById('editModal').classList.add('active');
     document.getElementById('editUserGivenNameInput').focus();
 }
@@ -235,6 +236,7 @@ function openEditModal(id) {
     document.getElementById('editUserGivenNameInput').value = user.given_name || '';
     document.getElementById('editUserNameInput').value = user.name;
     document.getElementById('editUserCategoryInput').value = user.category || '';
+    document.getElementById('editUserExcludeNotificationsInput').checked = user.exclude_from_mismatch_alerts === 1;
     document.getElementById('editModal').classList.add('active');
     document.getElementById('editUserGivenNameInput').focus();
 }
@@ -248,6 +250,7 @@ async function saveUserChanges() {
     const givenName = document.getElementById('editUserGivenNameInput').value.trim();
     const name = document.getElementById('editUserNameInput').value.trim();
     const category = document.getElementById('editUserCategoryInput').value || null;
+    const excludeFromMismatchAlerts = document.getElementById('editUserExcludeNotificationsInput').checked ? 1 : 0;
     const password = sessionStorage.getItem('adminPassword');
 
     if (!name) {
@@ -266,6 +269,7 @@ async function saveUserChanges() {
                 name,
                 givenName,
                 category,
+                excludeFromMismatchAlerts,
                 password
             })
         });

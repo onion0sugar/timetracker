@@ -103,7 +103,7 @@ app.post('/api/admin-login', (req, res) => {
 
 // API: Create User
 app.post('/api/users', async (req, res) => {
-    const { name, givenName, category, password } = req.body;
+    const { name, givenName, category, excludeFromMismatchAlerts, password } = req.body;
     if (password !== ADMIN_PASSWORD) {
         return res.status(403).json({ error: 'Niepoprawne hasło serwisowe' });
     }
@@ -111,8 +111,8 @@ app.post('/api/users', async (req, res) => {
 
     const id = uuidv4();
     try {
-        await db.query('INSERT INTO users (id, name, given_name, category) VALUES (?, ?, ?, ?)', [id, name, givenName || null, category || null]);
-        res.json({ id, name, givenName: givenName || null, category: category || null });
+        await db.query('INSERT INTO users (id, name, given_name, category, exclude_from_mismatch_alerts) VALUES (?, ?, ?, ?, ?)', [id, name, givenName || null, category || null, excludeFromMismatchAlerts ? 1 : 0]);
+        res.json({ id, name, givenName: givenName || null, category: category || null, exclude_from_mismatch_alerts: excludeFromMismatchAlerts ? 1 : 0 });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -122,7 +122,7 @@ app.post('/api/users', async (req, res) => {
 app.get('/api/users', async (req, res) => {
     try {
         const [users] = await db.query(`
-            SELECT u.id, u.name, u.given_name, u.category,
+            SELECT u.id, u.name, u.given_name, u.category, u.exclude_from_mismatch_alerts,
                    (SELECT state FROM activity_logs WHERE user_id = u.id AND end_time IS NULL ORDER BY start_time DESC LIMIT 1) as current_state,
                    (SELECT start_time FROM activity_logs WHERE user_id = u.id AND end_time IS NULL ORDER BY start_time DESC LIMIT 1) as current_session_start
             FROM users u WHERE u.deleted = 0
@@ -208,13 +208,13 @@ app.post('/api/logs', async (req, res) => {
 
 // API: Update User (Admin Protected)
 app.put('/api/users/:id', async (req, res) => {
-    const { name, givenName, category, password } = req.body;
+    const { name, givenName, category, excludeFromMismatchAlerts, password } = req.body;
     if (password !== ADMIN_PASSWORD) {
         return res.status(403).json({ error: 'Niepoprawne hasło serwisowe' });
     }
 
     try {
-        await db.query('UPDATE users SET name = ?, given_name = ?, category = ? WHERE id = ?', [name, givenName || null, category || null, req.params.id]);
+        await db.query('UPDATE users SET name = ?, given_name = ?, category = ?, exclude_from_mismatch_alerts = ? WHERE id = ?', [name, givenName || null, category || null, excludeFromMismatchAlerts ? 1 : 0, req.params.id]);
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ error: err.message });

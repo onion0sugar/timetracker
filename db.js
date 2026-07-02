@@ -24,6 +24,7 @@ async function initDB() {
                 name VARCHAR(255) NOT NULL,
                 given_name VARCHAR(255) DEFAULT NULL,
                 category VARCHAR(50) DEFAULT NULL,
+                exclude_from_mismatch_alerts TINYINT DEFAULT 0,
                 deleted TINYINT DEFAULT 0,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
@@ -88,6 +89,13 @@ async function initDB() {
         if (gnColumns.length === 0) {
             await db.query('ALTER TABLE users ADD COLUMN given_name VARCHAR(255) DEFAULT NULL AFTER name');
             console.log('Database migrated: added "given_name" column to users table');
+        }
+
+        // Migration: Add exclude_from_mismatch_alerts column if it doesn't exist
+        const [exclColumns] = await db.query('SHOW COLUMNS FROM users LIKE "exclude_from_mismatch_alerts"');
+        if (exclColumns.length === 0) {
+            await db.query('ALTER TABLE users ADD COLUMN exclude_from_mismatch_alerts TINYINT DEFAULT 0 AFTER category');
+            console.log('Database migrated: added "exclude_from_mismatch_alerts" column to users table');
         }
 
         // Migration: Add index on start_time for faster date filtering
