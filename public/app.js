@@ -6,6 +6,7 @@ let isAdmin = sessionStorage.getItem('isAdmin') === 'true';
 let isViewAuthenticated = sessionStorage.getItem('isViewAuthenticated') === 'true';
 let allUsers = [];
 let currentFilter = 'all';
+let currentSearch = '';
 let userToEdit = null;
 let currentStateName = null;
 
@@ -40,10 +41,24 @@ function renderUsers() {
     const grid = document.getElementById('userGrid');
     if (!grid) return;
 
+    const searchQuery = currentSearch.toLowerCase().trim();
+
     const filteredUsers = allUsers.filter(user => {
-        if (currentFilter === 'all') return true;
-        if (currentFilter === 'none') return !user.category;
-        return user.category === currentFilter;
+        const matchesFilter = currentFilter === 'all'
+            ? true
+            : currentFilter === 'none'
+                ? !user.category
+                : user.category === currentFilter;
+
+        if (!matchesFilter) return false;
+
+        if (searchQuery) {
+            const name = (user.name || '').toLowerCase();
+            const givenName = (user.given_name || '').toLowerCase();
+            return name.includes(searchQuery) || givenName.includes(searchQuery);
+        }
+
+        return true;
     });
 
     grid.innerHTML = filteredUsers.map(user => {
@@ -550,6 +565,24 @@ if (document.getElementById('userGrid')) {
             currentFilter = btn.getAttribute('data-filter');
             renderUsers();
         }
+    });
+
+    // Search Bar Event Listeners
+    const searchInput = document.getElementById('userSearchInput');
+    const searchClearBtn = document.getElementById('searchClearBtn');
+
+    searchInput.addEventListener('input', () => {
+        currentSearch = searchInput.value;
+        searchClearBtn.classList.toggle('visible', currentSearch.length > 0);
+        renderUsers();
+    });
+
+    searchClearBtn.addEventListener('click', () => {
+        currentSearch = '';
+        searchInput.value = '';
+        searchClearBtn.classList.remove('visible');
+        searchInput.focus();
+        renderUsers();
     });
 
     // Admin Event Listeners

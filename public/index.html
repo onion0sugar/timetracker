@@ -34,6 +34,15 @@
             <button id="addUserBtn" class="btn-add-user">+ Dodaj Użytkownika</button>
         </div>
 
+        <!-- Search Bar -->
+        <div class="search-bar" id="searchBar">
+            <div class="search-input-wrapper">
+                <span class="search-icon">🔍</span>
+                <input type="text" id="userSearchInput" placeholder="Szukaj użytkownika po nazwie..." autocomplete="off">
+                <button class="search-clear" id="searchClearBtn" title="Wyczyść">✕</button>
+            </div>
+        </div>
+
         <!-- Filter Bar -->
         <div class="filter-bar" id="filterBar">
             <button class="filter-btn active" data-filter="all">Wszyscy</button>
@@ -72,9 +81,9 @@
                     <option value="Inne">Inne</option>
                 </select>
             </div>
-            <div style="margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px;">
-                <input type="checkbox" id="editUserExcludeNotificationsInput" style="width: auto; cursor: pointer; margin: 0;">
-                <label for="editUserExcludeNotificationsInput" style="font-size: 0.85rem; opacity: 0.8; cursor: pointer; user-select: none;">Pomijaj w powiadomieniach niezgodności</label>
+            <div class="checkbox-row">
+                <input type="checkbox" id="editUserExcludeNotificationsInput">
+                <label for="editUserExcludeNotificationsInput">Pomijaj w powiadomieniach niezgodności</label>
             </div>
             <div class="modal-actions">
                 <button id="confirmEditBtn">Zapisz zmiany</button>

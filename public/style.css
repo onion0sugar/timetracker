@@ -285,6 +285,101 @@ button:active {
     box-shadow: 0 0 10px rgba(242, 114, 0, 0.3);
 }
 
+/* Search Bar */
+.search-bar {
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.search-input-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 460px;
+    display: flex;
+    align-items: center;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    font-size: 1rem;
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 1;
+}
+
+.search-input-wrapper input {
+    flex: 1;
+    padding: 11px 44px 11px 40px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 12px;
+    color: white;
+    font-size: 0.9rem;
+    outline: none;
+    transition: 0.25s;
+}
+
+.search-input-wrapper input:focus {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(242, 114, 0, 0.15);
+}
+
+.search-clear {
+    position: absolute;
+    right: 8px;
+    padding: 4px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    border-radius: 6px;
+    color: rgba(255,255,255,0.6);
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition: 0.2s;
+    display: none;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.search-clear:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.search-clear.visible {
+    display: block;
+}
+
+/* Checkbox row in modal */
+.checkbox-row {
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transform: none !important;
+}
+
+.checkbox-row input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 16px;
+    cursor: pointer;
+    margin: 0;
+    accent-color: var(--primary);
+}
+
+.checkbox-row label {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    cursor: pointer;
+    user-select: none;
+    line-height: 1.3;
+}
+
 /* 4-Position Switch */
 .switch-container {
     display: flex;
