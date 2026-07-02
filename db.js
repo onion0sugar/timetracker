@@ -59,6 +59,16 @@ async function initDB() {
             )
         `);
 
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS verification_mismatches (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                user_name VARCHAR(255) NOT NULL,
+                current_state VARCHAR(50) NOT NULL,
+                expected_state VARCHAR(50) NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        `);
+
         // Migration: Add category column if it doesn't exist
         const [catColumns] = await db.query('SHOW COLUMNS FROM users LIKE "category"');
         if (catColumns.length === 0) {

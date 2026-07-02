@@ -47,6 +47,9 @@ async function verifySwitchStates(lookbackSeconds = 30) {
 
     let mssqlPool;
     try {
+        // Clear previous mismatches from the database before starting verification
+        await mysqlDB.query('TRUNCATE TABLE verification_mismatches');
+
         mssqlPool = await sql.connect(config);
 
         const limit = 200;
@@ -123,6 +126,13 @@ async function verifySwitchStates(lookbackSeconds = 30) {
                     console.log(`[VERIFICATION] Niezgodność (POMINIĘTO): Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState} (użytkownik na liście pominiętych)`);
                 } else {
                     console.log(`[VERIFICATION] Niezgodność: Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState}`);
+                    
+                    // Insert active mismatch into the database table
+                    await mysqlDB.query(
+                        'INSERT INTO verification_mismatches (user_name, current_state, expected_state) VALUES (?, ?, ?)',
+                        [user.name, currentState, data.expectedState]
+                    );
+
                     mismatches.push({
                         userId: user.id,
                         userName: user.name,
