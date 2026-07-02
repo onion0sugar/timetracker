@@ -81,10 +81,6 @@ async function verifySwitchStates(lookbackSeconds = 30) {
             const userName = scan.UserName;
             if (!userName) continue;
 
-            if (excludedUsers.includes(userName.toLowerCase())) {
-                continue;
-            }
-
             if (!userLatestScan[userName]) {
                 userLatestScan[userName] = {
                     expectedState: documentTypeToState(scan.DocumentType),
@@ -98,6 +94,7 @@ async function verifySwitchStates(lookbackSeconds = 30) {
 
         // 3. Cross-reference with MySQL activity_logs
         const mismatches = [];
+        let skippedMismatchesCount = 0;
         for (const [userName, data] of Object.entries(userLatestScan)) {
             const [users] = await mysqlDB.query(
                 'SELECT id, name, given_name FROM users WHERE name = ? AND deleted = 0',
@@ -120,28 +117,36 @@ async function verifySwitchStates(lookbackSeconds = 30) {
             const isType3Compatible = data.documentType === 3 && workStates.includes(currentState);
 
             if (currentState !== data.expectedState && !isType3Compatible) {
-                mismatches.push({
-                    userId: user.id,
-                    userName: user.name,
-                    displayName: (user.given_name && user.given_name.trim() !== '')
-                        ? user.given_name
-                        : user.name,
-                    currentState,
-                    expectedState: data.expectedState,
-                    lastScanTime: data.lastScanTime,
-                    scanCount: data.scanCount
-                });
+                const isExcluded = excludedUsers.includes(userName.toLowerCase());
+                if (isExcluded) {
+                    skippedMismatchesCount++;
+                    console.log(`[VERIFICATION] Niezgodność (POMINIĘTO): Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState} (użytkownik na liście pominiętych)`);
+                } else {
+                    console.log(`[VERIFICATION] Niezgodność: Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState}`);
+                    mismatches.push({
+                        userId: user.id,
+                        userName: user.name,
+                        displayName: (user.given_name && user.given_name.trim() !== '')
+                            ? user.given_name
+                            : user.name,
+                        currentState,
+                        expectedState: data.expectedState,
+                        lastScanTime: data.lastScanTime,
+                        scanCount: data.scanCount
+                    });
+                }
             }
         }
 
         // 4. Log summary
         const uniqueUsers = Object.keys(userLatestScan).length;
-        const consistent = uniqueUsers - mismatches.length;
+        const consistent = uniqueUsers - mismatches.length - skippedMismatchesCount;
         console.log(
             `[VERIFICATION] OK: ${scans.length} scanów, ` +
             `${uniqueUsers} użytkowników, ` +
             `${consistent} zgodnych, ` +
-            `${mismatches.length} niezgodności`
+            `${mismatches.length} niezgodności, ` +
+            `${skippedMismatchesCount} pominiętych niezgodności`
         );
 
         return mismatches;
