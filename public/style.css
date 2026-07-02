@@ -360,15 +360,26 @@ button:active {
     display: flex;
     align-items: center;
     gap: 10px;
+}
+
+.checkbox-row,
+.checkbox-row *,
+.checkbox-row *:hover,
+.checkbox-row *:focus {
     transform: none !important;
+    box-shadow: none !important;
+    transition: none !important;
 }
 
 .checkbox-row input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    flex: 0 0 16px;
+    width: 16px !important;
+    height: 16px !important;
+    flex: 0 0 16px !important;
     cursor: pointer;
-    margin: 0;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: none !important;
     accent-color: var(--primary);
 }
 
