@@ -11,147 +11,135 @@ const config = {
     options: {
         encrypt: true,
         trustServerCertificate: true,
-        requestTimeout: 10000 // 10 sekund max na zapytanie — inaczej przerwane
+        requestTimeout: 10000
     }
 };
 
-// Maps DocumentType to expected switch state per LEGENDA from zapytanie.txt
-function documentTypeToState(docType) {
-    const map = {
-        2: 'Rozkładanie',
-        7: 'Zbieranie',
-        8: 'Pakowanie'
-    };
-    // 3 and 22 are excluded at query level (NOT IN)
-    // Everything else maps to "Inne"
-    return map[docType] || 'Inne';
-}
+const DOC_TYPE_LABEL = {
+    2: 'Rozkładanie',
+    7: 'Zbieranie',
+    8: 'Pakowanie'
+};
+
+// States that mean the worker should not be actively scanning
+const INACTIVE_STATES = new Set(['OFF', 'PRZERWA']);
 
 /**
- * Query MSSQL for recent scans and compare each user's actual activity
- * against their current switch state in activity_logs.
+ * Query MSSQL for recent work-type scans (Zbieranie / Pakowanie / Rozkładanie)
+ * and alert whenever a scan is detected while the user's switch is inactive
+ * (OFF or PRZERWA). All scans in the lookback window are evaluated.
  *
  * @param {number} lookbackSeconds - How far back to look for scans (default 30)
- * @returns {Promise<Array<{userId, userName, displayName, currentState, expectedState, lastScanTime, scanCount}>>}
  */
 async function verifySwitchStates(lookbackSeconds = 30) {
     if (process.env.VERIFICATION_ENABLED !== 'true') {
-        console.log(`[VERIFICATION] Disabled (VERIFICATION_ENABLED != true)`);
+        console.log('[VERIFICATION] Disabled (VERIFICATION_ENABLED != true)');
         return [];
     }
 
     let mssqlPool;
     try {
-        // Clear previous mismatches from the database before starting verification
         await mysqlDB.query('TRUNCATE TABLE verification_mismatches');
 
         mssqlPool = await sql.connect(config);
 
-        const limit = 200;
+        // Fetch only work-type scans from today within the lookback window.
+        // DocumentType IN (2=Rozkładanie, 7=Zbieranie, 8=Pakowanie)
         const query = `
-            SELECT TOP ${limit}
-                   PPP.[Id],
+            SELECT TOP 200
                    CU.UserName,
                    DD.DocumentType,
-                   PPP.[DateCreatedUtc],
-                   PPP.[CreatedBy]
+                   PPP.DateCreatedUtc
             FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
-            LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
-            LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
+            JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
+            JOIN Core.Users        CU ON CU.Id = PPP.CreatedBy
             WHERE PPP.DateCreatedUtc >= DATEADD(SECOND, -${lookbackSeconds}, GETUTCDATE())
               AND PPP.DateCreatedUtc >= CAST(GETUTCDATE() AS DATE)
-              AND DD.DocumentType NOT IN (22)
+              AND DD.DocumentType IN (2, 7, 8)
             ORDER BY PPP.DateCreatedUtc DESC
         `;
 
-        const result = await mssqlPool.request().query(query);
-        const scans = result.recordset;
+        const scans = (await mssqlPool.request().query(query)).recordset;
 
         if (scans.length === 0) {
-            console.log(`[VERIFICATION] OK: 0 scanów w oknie ${lookbackSeconds}s`);
+            console.log(`[VERIFICATION] OK: 0 scanów roboczych w oknie ${lookbackSeconds}s`);
             return [];
         }
 
-        // 2. Group scans by user — each user gets the expected state
-        //    based on the most recent scan in the window
-        const userLatestScan = {};
-        for (const scan of scans) {
-            const userName = scan.UserName;
-            if (!userName) continue;
+        // Resolve unique users from MySQL once
+        const uniqueUserNames = [...new Set(scans.map(s => s.UserName).filter(Boolean))];
+        const userCache = {};
 
-            if (!userLatestScan[userName]) {
-                userLatestScan[userName] = {
-                    expectedState: documentTypeToState(scan.DocumentType),
-                    documentType: scan.DocumentType,
-                    lastScanTime: scan.DateCreatedUtc,
-                    scanCount: 0
-                };
-            }
-            userLatestScan[userName].scanCount++;
-        }
-
-        // 3. Cross-reference with MySQL activity_logs
-        const mismatches = [];
-        let skippedMismatchesCount = 0;
-        for (const [userName, data] of Object.entries(userLatestScan)) {
+        for (const userName of uniqueUserNames) {
             const [users] = await mysqlDB.query(
                 'SELECT id, name, given_name, exclude_from_mismatch_alerts FROM users WHERE name = ? AND deleted = 0',
                 [userName]
             );
-
             if (users.length === 0) continue;
 
             const user = users[0];
-
             const [logs] = await mysqlDB.query(
                 'SELECT state FROM activity_logs WHERE user_id = ? AND end_time IS NULL ORDER BY start_time DESC LIMIT 1',
                 [user.id]
             );
 
-            const currentState = logs.length > 0 ? logs[0].state : 'OFF';
-
-            // Type 3 is compatible with Rozkładanie, Zbieranie, Pakowanie
-            const workStates = ['Rozkładanie', 'Zbieranie', 'Pakowanie'];
-            const isType3Compatible = data.documentType === 3 && workStates.includes(currentState);
-
-            if (currentState !== data.expectedState && !isType3Compatible) {
-                const isExcluded = user.exclude_from_mismatch_alerts === 1;
-                if (isExcluded) {
-                    skippedMismatchesCount++;
-                    console.log(`[VERIFICATION] Niezgodność (POMINIĘTO): Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState} (użytkownik na liście pominiętych)`);
-                } else {
-                    console.log(`[VERIFICATION] Niezgodność: Użytkownik ${userName} ma stan ${currentState}, a oczekiwano ${data.expectedState}`);
-                    
-                    // Insert active mismatch into the database table
-                    await mysqlDB.query(
-                        'INSERT INTO verification_mismatches (user_name, current_state, expected_state) VALUES (?, ?, ?)',
-                        [user.name, currentState, data.expectedState]
-                    );
-
-                    mismatches.push({
-                        userId: user.id,
-                        userName: user.name,
-                        displayName: (user.given_name && user.given_name.trim() !== '')
-                            ? user.given_name
-                            : user.name,
-                        currentState,
-                        expectedState: data.expectedState,
-                        lastScanTime: data.lastScanTime,
-                        scanCount: data.scanCount
-                    });
-                }
-            }
+            userCache[userName] = {
+                id: user.id,
+                name: user.name,
+                displayName: user.given_name?.trim() || user.name,
+                exclude: user.exclude_from_mismatch_alerts === 1,
+                currentState: logs[0]?.state ?? 'OFF'
+            };
         }
 
-        // 4. Log summary
-        const uniqueUsers = Object.keys(userLatestScan).length;
-        const consistent = uniqueUsers - mismatches.length - skippedMismatchesCount;
+        // Evaluate every scan — alert if switch is inactive
+        const mismatchMap = {};
+        let skippedCount = 0;
+
+        for (const scan of scans) {
+            const user = userCache[scan.UserName];
+            if (!user) continue;
+
+            if (!INACTIVE_STATES.has(user.currentState)) continue; // switch is active — OK
+
+            const scanLabel = DOC_TYPE_LABEL[scan.DocumentType];
+
+            if (user.exclude) {
+                skippedCount++;
+                console.log(`[VERIFICATION] Niezgodność (POMINIĘTO): ${scan.UserName} skanuje ${scanLabel} przy stanie ${user.currentState}`);
+                continue;
+            }
+
+            console.log(`[VERIFICATION] Niezgodność: ${scan.UserName} skanuje ${scanLabel} przy stanie ${user.currentState}`);
+
+            if (!mismatchMap[scan.UserName]) {
+                mismatchMap[scan.UserName] = {
+                    userId: user.id,
+                    userName: user.name,
+                    displayName: user.displayName,
+                    currentState: user.currentState,
+                    scanDocumentType: scanLabel,
+                    lastScanTime: scan.DateCreatedUtc,
+                    scanCount: 0
+                };
+            }
+            mismatchMap[scan.UserName].scanCount++;
+        }
+
+        // Persist mismatches and build return list
+        const mismatches = [];
+        for (const [userName, data] of Object.entries(mismatchMap)) {
+            await mysqlDB.query(
+                'INSERT INTO verification_mismatches (user_name, current_state, expected_state) VALUES (?, ?, ?)',
+                [userName, data.currentState, data.scanDocumentType]
+            );
+            mismatches.push(data);
+        }
+
         console.log(
-            `[VERIFICATION] OK: ${scans.length} scanów, ` +
-            `${uniqueUsers} użytkowników, ` +
-            `${consistent} zgodnych, ` +
+            `[VERIFICATION] ${scans.length} skanów, ` +
             `${mismatches.length} niezgodności, ` +
-            `${skippedMismatchesCount} pominiętych niezgodności`
+            `${skippedCount} pominiętych (wykluczone konta)`
         );
 
         return mismatches;
