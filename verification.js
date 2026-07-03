@@ -118,7 +118,7 @@ async function verifySwitchStates(lookbackSeconds = 30) {
                     userName: user.name,
                     displayName: user.displayName,
                     currentState: user.currentState,
-                    scanDocumentType: scanLabel,
+                    expectedState: scanLabel,
                     lastScanTime: scan.DateCreatedUtc,
                     scanCount: 0
                 };
@@ -131,7 +131,7 @@ async function verifySwitchStates(lookbackSeconds = 30) {
         for (const [userName, data] of Object.entries(mismatchMap)) {
             await mysqlDB.query(
                 'INSERT INTO verification_mismatches (user_name, current_state, expected_state) VALUES (?, ?, ?)',
-                [userName, data.currentState, data.scanDocumentType]
+                [userName, data.currentState, data.expectedState]
             );
             mismatches.push(data);
         }
