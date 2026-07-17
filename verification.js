@@ -21,13 +21,22 @@ const DOC_TYPE_LABEL = {
     8: 'Pakowanie'
 };
 
-// States that mean the worker should not be actively scanning
-const INACTIVE_STATES = new Set(['OFF', 'PRZERWA']);
+// Map: switch state → allowed DocumentType(s).
+// States absent from this map (OFF, PRZERWA, unknown) allow NO scanning.
+const STATE_ALLOWED_DOC_TYPES = {
+    'ZBIERANIE':   new Set([7]),
+    'PAKOWANIE':   new Set([8]),
+    'ROZKŁADANIE': new Set([2])
+};
 
 /**
  * Query MSSQL for recent work-type scans (Zbieranie / Pakowanie / Rozkładanie)
- * and alert whenever a scan is detected while the user's switch is inactive
- * (OFF or PRZERWA). All scans in the lookback window are evaluated.
+ * and alert on any mismatch between the user's switch state and the scanned
+ * document type:
+ *   - OFF / PRZERWA (or any unknown state) → no scanning allowed at all
+ *   - ZBIERANIE → only DocumentType 7 allowed
+ *   - PAKOWANIE → only DocumentType 8 allowed
+ *   - ROZKŁADANIE → only DocumentType 2 allowed
  *
  * @param {number} lookbackSeconds - How far back to look for scans (default 30)
  */
@@ -92,7 +101,9 @@ async function verifySwitchStates(lookbackSeconds = 30) {
             };
         }
 
-        // Evaluate every scan — alert if switch is inactive
+        // Evaluate every scan — alert if:
+        //   (a) switch is OFF/PRZERWA (no scanning allowed), OR
+        //   (b) switch is active but the doc type doesn't match the allowed set
         const mismatchMap = {};
         let skippedCount = 0;
 
@@ -100,7 +111,10 @@ async function verifySwitchStates(lookbackSeconds = 30) {
             const user = userCache[scan.UserName];
             if (!user) continue;
 
-            if (!INACTIVE_STATES.has(user.currentState)) continue; // switch is active — OK
+            const allowedTypes = STATE_ALLOWED_DOC_TYPES[user.currentState];
+
+            // OK: state is active and the scanned doc type matches — skip
+            if (allowedTypes?.has(scan.DocumentType)) continue;
 
             const scanLabel = DOC_TYPE_LABEL[scan.DocumentType];
 
