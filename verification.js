@@ -22,21 +22,22 @@ const DOC_TYPE_LABEL = {
 };
 
 // Map: switch state → allowed DocumentType(s).
-// States absent from this map (OFF, PRZERWA, unknown) allow NO scanning.
+// States absent from this map (OFF, Przerwa, unknown) allow NO scanning.
+// Keys must match exactly what the frontend sends and is stored in activity_logs.state
 const STATE_ALLOWED_DOC_TYPES = {
-    'ZBIERANIE':   new Set([7]),
-    'PAKOWANIE':   new Set([8]),
-    'ROZKŁADANIE': new Set([2])
+    'Zbieranie':   new Set([7]),
+    'Pakowanie':   new Set([8]),
+    'Rozkładanie': new Set([2])
 };
 
 /**
  * Query MSSQL for recent work-type scans (Zbieranie / Pakowanie / Rozkładanie)
  * and alert on any mismatch between the user's switch state and the scanned
  * document type:
- *   - OFF / PRZERWA (or any unknown state) → no scanning allowed at all
- *   - ZBIERANIE → only DocumentType 7 allowed
- *   - PAKOWANIE → only DocumentType 8 allowed
- *   - ROZKŁADANIE → only DocumentType 2 allowed
+ *   - OFF / Przerwa (or any unknown state) → no scanning allowed at all
+ *   - Zbieranie → only DocumentType 7 allowed
+ *   - Pakowanie → only DocumentType 8 allowed
+ *   - Rozkładanie → only DocumentType 2 allowed
  *
  * @param {number} lookbackSeconds - How far back to look for scans (default 30)
  */
