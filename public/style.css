@@ -167,84 +167,165 @@ button:active {
     transform: translateY(0);
 }
 
-/* User Cards */
+/* ── User List (Dashboard) ───────────────────────────────── */
 .user-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
 }
 
 .user-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--glass-border);
-    padding: 1.5rem;
-    border-radius: 20px;
-    transition: 0.3s;
-    max-width: 400px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    padding: 0.85rem 0.5rem;
+    border-radius: 0;
+    transition: background 0.18s ease;
+    position: relative;
+    min-height: 64px;
+}
+
+.user-card:first-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .user-card:hover {
-    background: rgba(255, 255, 255, 0.08);
-    transform: scale(1.02);
+    background: rgba(255, 255, 255, 0.04);
 }
 
-.user-card h3 {
-    margin-bottom: 1rem;
-    font-size: 1.25rem;
+/* coloured left accent bar driven by a data-state attribute on the card */
+.user-card::before {
+    content: '';
+    display: block;
+    flex-shrink: 0;
+    width: 4px;
+    align-self: stretch;
+    border-radius: 4px;
+    background: var(--off);
+    transition: background 0.3s ease;
 }
 
-.status-badge {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+.user-card[data-state="Przerwa"]::before   { background: var(--przerwa); }
+.user-card[data-state="Zbieranie"]::before { background: var(--zbieranie); }
+.user-card[data-state="Pakowanie"]::before { background: var(--pakowanie); }
+.user-card[data-state="Rozkładanie"]::before { background: var(--rozkladanie); }
+.user-card[data-state="Inne"]::before      { background: var(--inne); }
+
+/* ── Identity column ─────────────────────────────────────── */
+.user-card-identity {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 130px;
+    max-width: 160px;
+    flex-shrink: 0;
+}
+
+.user-card-identity h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin: 0 0 3px;
 }
 
 .category-badge {
     display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 0.7rem;
-    background: rgba(255, 255, 255, 0.1);
-    color: rgba(255, 255, 255, 0.7);
-    margin-bottom: 1rem;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 2px 7px;
+    border-radius: 5px;
+    font-size: 0.68rem;
+    font-weight: 500;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.55);
+    border: 1px solid rgba(255, 255, 255, 0.07);
+    letter-spacing: 0.3px;
+    white-space: nowrap;
+    width: fit-content;
 }
 
-.status-off {
-    background: var(--off);
+/* ── Status pill ──────────────────────────────────────────── */
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 20px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    white-space: nowrap;
+    text-transform: uppercase;
 }
 
-.status-przerwa {
-    background: var(--przerwa);
+.status-off        { background: rgba(87,  101, 116, 0.25); color: #a0aab4; border: 1px solid rgba(87,101,116,0.4); }
+.status-przerwa    { background: rgba(211,  84,   0, 0.18); color: #e07845; border: 1px solid rgba(211,84,0,0.35); }
+.status-zbieranie  { background: rgba( 39, 174,  96, 0.18); color: #48c97a; border: 1px solid rgba(39,174,96,0.35); }
+.status-pakowanie  { background: rgba( 41, 128, 185, 0.18); color: #5babd9; border: 1px solid rgba(41,128,185,0.35); }
+.status-rozkladanie{ background: rgba(142,  68, 173, 0.18); color: #b87fe0; border: 1px solid rgba(142,68,173,0.35); }
+.status-inne       { background: rgba(243, 156,  18, 0.18); color: #f5bc48; border: 1px solid rgba(243,156,18,0.35); }
+
+/* ── Stats area ──────────────────────────────────────────── */
+.user-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+    flex: 1;
+    min-width: 0;
+    align-items: center;
 }
 
-.status-zbieranie {
-    background: var(--zbieranie);
+.user-stat-item {
+    display: flex;
+    gap: 5px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    white-space: nowrap;
 }
 
-.status-pakowanie {
-    background: var(--pakowanie);
+.user-stat-label {
+    opacity: 0.45;
+    font-weight: 500;
 }
 
-.status-rozkladanie {
-    background: var(--rozkladanie);
+.user-stat-value {
+    font-weight: 600;
+    opacity: 0.9;
 }
 
-.status-inne {
-    background: var(--inne);
+.no-activity-label {
+    font-size: 0.78rem;
+    opacity: 0.35;
+    font-style: italic;
+}
+
+/* ── Admin action column ─────────────────────────────────── */
+.user-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    margin-left: auto;
 }
 
 .copy-link {
-    font-size: 0.8rem;
-    color: rgba(255, 255, 254, 0.6);
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.45);
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    margin-top: 1rem;
+    gap: 4px;
+    transition: color 0.2s;
+    padding: 4px 6px;
+    border-radius: 6px;
+}
+
+.copy-link:hover {
+    color: rgba(255, 255, 255, 0.8);
+    background: rgba(255,255,255,0.06);
 }
 
 /* Filter Bar */
@@ -694,9 +775,13 @@ body.admin-mode #adminLoginBtn {
         font-size: 3rem;
     }
 
-    .user-grid {
-        grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-        gap: 1rem;
+    .user-card {
+        gap: 0.75rem;
+        padding: 0.75rem 0.25rem;
+    }
+    .user-card-identity {
+        min-width: 100px;
+        max-width: 130px;
     }
 
     .form-group {
@@ -785,5 +870,31 @@ body.admin-mode #adminLoginBtn {
 
     #currentStateName {
         font-size: 1rem !important;
+    }
+
+    .user-card {
+        flex-wrap: wrap;
+        min-height: auto;
+        padding: 0.7rem 0.25rem;
+    }
+
+    .user-card-identity {
+        min-width: 90px;
+        max-width: 110px;
+    }
+
+    .user-card-stats {
+        width: 100%;
+        order: 3;
+        padding-left: 12px;
+        margin-top: 4px;
+    }
+
+    .user-card-actions {
+        order: 4;
+        width: 100%;
+        padding-left: 12px;
+        justify-content: flex-start;
+        margin-left: 0;
     }
 }

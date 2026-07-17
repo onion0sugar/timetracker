@@ -63,40 +63,35 @@ function renderUsers() {
 
     grid.innerHTML = filteredUsers.map(user => {
         const stateClass = getStateClass(user.current_state);
+        const currentState = user.current_state || 'OFF';
         const displayName = (user.given_name && user.given_name.trim() !== '') ? user.given_name : user.name;
+
         const statsHtml = user.daily_stats && user.daily_stats.length > 0
             ? user.daily_stats.map(s => `
-                <div style="display: flex; gap: 10px; margin-bottom: 2px;">
-                    <span style="font-weight: 600; min-width: 90px; opacity: 0.9;">${s.state}:</span>
-                    <span id="stat-${user.id}-${s.state}">${formatDuration(s.duration || 0)}</span>
+                <div class="user-stat-item">
+                    <span class="user-stat-label">${s.state}:</span>
+                    <span class="user-stat-value" id="stat-${user.id}-${s.state}">${formatDuration(s.duration || 0)}</span>
                 </div>
             `).join('')
-            : '<div style="opacity: 0.5;">Brak aktywności dzisiaj</div>';
+            : '<span class="no-activity-label">brak aktywności</span>';
 
         return `
-            <div class="user-card" style="display: flex; flex-direction: column;">
-                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.5rem;">
-                    <div>
-                        <h3 style="margin: 0; font-size: 1.2rem;">${displayName}</h3>
-                        ${user.category ? `<div class="category-badge">${user.category}</div>` : ''}
-                    </div>
-                    <span class="status-badge status-${stateClass}" style="margin: 0;">
-                        ${user.current_state || 'OFF'}
-                    </span>
+            <div class="user-card" data-state="${currentState}">
+                <div class="user-card-identity">
+                    <h3>${displayName}</h3>
+                    ${user.category ? `<div class="category-badge">${user.category}</div>` : ''}
                 </div>
-                <div class="daily-breakdown" style="background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem; flex-grow: 1;">
-                    <div style="font-weight: 600; margin-bottom: 8px; font-size: 0.75rem; text-transform: uppercase; opacity: 0.5;">Dzisiaj:</div>
+
+                <span class="status-badge status-${stateClass}">${currentState}</span>
+
+                <div class="user-card-stats">
                     ${statsHtml}
                 </div>
-                
-                <div class="admin-only" style="justify-content: space-between; align-items: center; margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.08); gap: 8px;">
-                    <div class="copy-link" data-id="${user.id}" style="margin: 0; opacity: 0.8; font-size: 0.85rem;">
-                        🔗 Link
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="edit-user-btn" data-id="${user.id}" style="padding: 6px 12px; background: rgba(52, 152, 219, 0.1); color: #3498db; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(52, 152, 219, 0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
-                        <button class="delete-user-btn" data-id="${user.id}" style="padding: 6px 12px; background: rgba(235, 77, 75, 0.1); color: #eb4d4b; border-radius: 8px; font-size: 0.75rem; border: 1px solid rgba(235, 77, 75, 0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
-                    </div>
+
+                <div class="user-card-actions admin-only">
+                    <div class="copy-link" data-id="${user.id}" title="Kopiuj link">🔗</div>
+                    <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
+                    <button class="delete-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(235,77,75,0.12); color: #eb6d6b; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(235,77,75,0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
                 </div>
             </div>
         `;
