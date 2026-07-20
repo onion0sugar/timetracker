@@ -42,7 +42,7 @@ body {
 }
 
 .container {
-    width: 95%;
+    width: 80%;
     margin: 30px;
     padding: 2.5rem;
     background: rgba(10, 15, 29, 0.8);
@@ -208,11 +208,25 @@ button:active {
     transition: background 0.3s ease;
 }
 
-.user-card[data-state="Przerwa"]::before   { background: var(--przerwa); }
-.user-card[data-state="Zbieranie"]::before { background: var(--zbieranie); }
-.user-card[data-state="Pakowanie"]::before { background: var(--pakowanie); }
-.user-card[data-state="Rozkładanie"]::before { background: var(--rozkladanie); }
-.user-card[data-state="Inne"]::before      { background: var(--inne); }
+.user-card[data-state="Przerwa"]::before {
+    background: var(--przerwa);
+}
+
+.user-card[data-state="Zbieranie"]::before {
+    background: var(--zbieranie);
+}
+
+.user-card[data-state="Pakowanie"]::before {
+    background: var(--pakowanie);
+}
+
+.user-card[data-state="Rozkładanie"]::before {
+    background: var(--rozkladanie);
+}
+
+.user-card[data-state="Inne"]::before {
+    background: var(--inne);
+}
 
 /* ── Identity column ─────────────────────────────────────── */
 .user-card-identity {
@@ -261,12 +275,41 @@ button:active {
     text-transform: uppercase;
 }
 
-.status-off        { background: rgba(87,  101, 116, 0.25); color: #a0aab4; border: 1px solid rgba(87,101,116,0.4); }
-.status-przerwa    { background: rgba(211,  84,   0, 0.18); color: #e07845; border: 1px solid rgba(211,84,0,0.35); }
-.status-zbieranie  { background: rgba( 39, 174,  96, 0.18); color: #48c97a; border: 1px solid rgba(39,174,96,0.35); }
-.status-pakowanie  { background: rgba( 41, 128, 185, 0.18); color: #5babd9; border: 1px solid rgba(41,128,185,0.35); }
-.status-rozkladanie{ background: rgba(142,  68, 173, 0.18); color: #b87fe0; border: 1px solid rgba(142,68,173,0.35); }
-.status-inne       { background: rgba(243, 156,  18, 0.18); color: #f5bc48; border: 1px solid rgba(243,156,18,0.35); }
+.status-off {
+    background: rgba(87, 101, 116, 0.25);
+    color: #a0aab4;
+    border: 1px solid rgba(87, 101, 116, 0.4);
+}
+
+.status-przerwa {
+    background: rgba(211, 84, 0, 0.18);
+    color: #e07845;
+    border: 1px solid rgba(211, 84, 0, 0.35);
+}
+
+.status-zbieranie {
+    background: rgba(39, 174, 96, 0.18);
+    color: #48c97a;
+    border: 1px solid rgba(39, 174, 96, 0.35);
+}
+
+.status-pakowanie {
+    background: rgba(41, 128, 185, 0.18);
+    color: #5babd9;
+    border: 1px solid rgba(41, 128, 185, 0.35);
+}
+
+.status-rozkladanie {
+    background: rgba(142, 68, 173, 0.18);
+    color: #b87fe0;
+    border: 1px solid rgba(142, 68, 173, 0.35);
+}
+
+.status-inne {
+    background: rgba(243, 156, 18, 0.18);
+    color: #f5bc48;
+    border: 1px solid rgba(243, 156, 18, 0.35);
+}
 
 /* ── Stats area ──────────────────────────────────────────── */
 .user-card-stats {
@@ -325,7 +368,7 @@ button:active {
 
 .copy-link:hover {
     color: rgba(255, 255, 255, 0.8);
-    background: rgba(255,255,255,0.06);
+    background: rgba(255, 255, 255, 0.06);
 }
 
 /* Filter Bar */
@@ -415,7 +458,7 @@ button:active {
     background: rgba(255, 255, 255, 0.1);
     border: none;
     border-radius: 6px;
-    color: rgba(255,255,255,0.6);
+    color: rgba(255, 255, 255, 0.6);
     font-size: 0.75rem;
     cursor: pointer;
     transition: 0.2s;
@@ -779,6 +822,7 @@ body.admin-mode #adminLoginBtn {
         gap: 0.75rem;
         padding: 0.75rem 0.25rem;
     }
+
     .user-card-identity {
         min-width: 100px;
         max-width: 130px;
