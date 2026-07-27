@@ -89,7 +89,7 @@ function renderUsers() {
                 </div>
 
                 <div class="user-card-actions admin-only">
-                    <div class="copy-link" data-id="${user.id}" title="Kopiuj link">🔗</div>
+                    <div class="copy-link" data-id="${user.id}" title="Kopiuj link"><i class="ph ph-link"></i></div>
                     <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
                     <button class="delete-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(235,77,75,0.12); color: #eb6d6b; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(235,77,75,0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
                 </div>
