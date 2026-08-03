@@ -844,12 +844,6 @@ button:active {
     background: rgba(255, 255, 255, 0.2);
 }
 
-#configBtn {
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 600;
-}
-
 /* Admin Visibility */
 .admin-only {
     display: none !important;
