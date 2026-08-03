@@ -354,21 +354,9 @@ button:active {
     margin-left: auto;
 }
 
-.copy-link {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.45);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: color 0.2s;
-    padding: 4px 6px;
-    border-radius: 6px;
-}
-
-.copy-link:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.06);
+.open-link-btn:hover {
+    background: rgba(46, 204, 113, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(46, 204, 113, 0.2) !important;
 }
 
 /* Filter Bar */

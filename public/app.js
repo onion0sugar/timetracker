@@ -96,7 +96,7 @@ function renderUsers() {
                 </div>
 
                 <div class="user-card-actions admin-only">
-                    <div class="copy-link" data-id="${user.id}" title="Kopiuj link"><i class="ph ph-link"></i></div>
+                    <button class="open-link-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(46,204,113,0.12); color: #5bd98d; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(46,204,113,0.3); cursor: pointer; transition: 0.2s;">LINK</button>
                     <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
                     <button class="delete-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(235,77,75,0.12); color: #eb6d6b; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(235,77,75,0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
                 </div>
@@ -546,7 +546,7 @@ if (document.getElementById('userGrid')) {
     grid.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.delete-user-btn');
         const editBtn = e.target.closest('.edit-user-btn');
-        const copyBtn = e.target.closest('.copy-link');
+        const linkBtn = e.target.closest('.open-link-btn');
 
         if (deleteBtn) {
             const id = deleteBtn.getAttribute('data-id');
@@ -554,9 +554,9 @@ if (document.getElementById('userGrid')) {
         } else if (editBtn) {
             const id = editBtn.getAttribute('data-id');
             openEditModal(id);
-        } else if (copyBtn) {
-            const id = copyBtn.getAttribute('data-id');
-            copyUserLink(id);
+        } else if (linkBtn) {
+            const id = linkBtn.getAttribute('data-id');
+            window.open(`/user.html?id=${id}`, '_blank');
         }
     });
 
