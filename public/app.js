@@ -9,6 +9,7 @@ let currentFilter = 'all';
 let currentSearch = '';
 let userToEdit = null;
 let currentStateName = null;
+let expandedUserId = null;
 
 // Helper to normalize Polish state names for CSS classes
 function getStateClass(state) {
@@ -68,12 +69,16 @@ function renderUsers() {
         return bActive - aActive;
     });
 
+    const prevExpandedId = expandedUserId;
+
     grid.innerHTML = filteredUsers.map(user => {
         const stateClass = getStateClass(user.current_state);
         const currentState = user.current_state || 'OFF';
         const displayName = (user.given_name && user.given_name.trim() !== '') ? user.given_name : user.name;
+        const hasStats = user.daily_stats && user.daily_stats.length > 0;
+        const isExpanded = user.id === prevExpandedId;
 
-        const statsHtml = user.daily_stats && user.daily_stats.length > 0
+        const statsHtml = hasStats
             ? user.daily_stats.map(s => `
                 <div class="user-stat-item">
                     <span class="user-stat-label">${s.state}:</span>
@@ -91,14 +96,19 @@ function renderUsers() {
 
                 <span class="status-badge status-${stateClass}">${currentState}</span>
 
-                <div class="user-card-stats">
-                    ${statsHtml}
-                </div>
+                <button class="expand-toggle" data-id="${user.id}" title="${isExpanded ? 'Zwiń' : 'Rozwiń'}">
+                    ${isExpanded ? '▲' : '▼'}
+                </button>
 
                 <div class="user-card-actions admin-only">
                     <button class="open-link-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(46,204,113,0.12); color: #5bd98d; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(46,204,113,0.3); cursor: pointer; transition: 0.2s;">LINK</button>
                     <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
                     <button class="delete-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(235,77,75,0.12); color: #eb6d6b; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(235,77,75,0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
+                </div>
+            </div>
+            <div class="user-card-details${isExpanded ? ' expanded' : ''}" id="details-${user.id}">
+                <div class="user-card-details-inner">
+                    ${statsHtml}
                 </div>
             </div>
         `;
@@ -111,6 +121,31 @@ function renderUsers() {
 
     // Refresh admin visibility
     updateAdminUI();
+}
+
+function toggleUserDetails(id) {
+    if (expandedUserId === id) {
+        // Collapse currently expanded
+        const details = document.getElementById(`details-${id}`);
+        if (details) details.classList.remove('expanded');
+        const toggle = document.querySelector(`.expand-toggle[data-id="${id}"]`);
+        if (toggle) toggle.textContent = '▼';
+        expandedUserId = null;
+    } else {
+        // Collapse previous
+        if (expandedUserId) {
+            const prevDetails = document.getElementById(`details-${expandedUserId}`);
+            if (prevDetails) prevDetails.classList.remove('expanded');
+            const prevToggle = document.querySelector(`.expand-toggle[data-id="${expandedUserId}"]`);
+            if (prevToggle) prevToggle.textContent = '▼';
+        }
+        // Expand new
+        const details = document.getElementById(`details-${id}`);
+        if (details) details.classList.add('expanded');
+        const toggle = document.querySelector(`.expand-toggle[data-id="${id}"]`);
+        if (toggle) toggle.textContent = '▲';
+        expandedUserId = id;
+    }
 }
 
 function addUser() {
@@ -547,6 +582,7 @@ if (document.getElementById('userGrid')) {
         const deleteBtn = e.target.closest('.delete-user-btn');
         const editBtn = e.target.closest('.edit-user-btn');
         const linkBtn = e.target.closest('.open-link-btn');
+        const expandBtn = e.target.closest('.expand-toggle');
 
         if (deleteBtn) {
             const id = deleteBtn.getAttribute('data-id');
@@ -557,6 +593,9 @@ if (document.getElementById('userGrid')) {
         } else if (linkBtn) {
             const id = linkBtn.getAttribute('data-id');
             window.open(`/user.html?id=${id}`, '_blank');
+        } else if (expandBtn) {
+            const id = expandBtn.getAttribute('data-id');
+            toggleUserDetails(id);
         }
     });
 

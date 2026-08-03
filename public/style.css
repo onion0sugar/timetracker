@@ -345,6 +345,59 @@ button:active {
     font-style: italic;
 }
 
+/* ── Expand toggle ───────────────────────────────────────── */
+.expand-toggle {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.expand-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.8);
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ── Expandable details row ─────────────────────────────── */
+.user-card-details {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.25s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-card-details.expanded {
+    grid-template-rows: 1fr;
+}
+
+.user-card-details-inner {
+    overflow: hidden;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding: 0 0.5rem 0 1.2rem;
+    align-items: center;
+    min-height: 0;
+}
+
+.user-card-details.expanded .user-card-details-inner {
+    padding: 0.65rem 0.5rem 0.75rem 1.2rem;
+}
+
 /* ── Admin action column ─────────────────────────────────── */
 .user-card-actions {
     display: flex;
