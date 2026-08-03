@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const compression = require('compression');
@@ -259,6 +260,120 @@ app.delete('/api/users/:id', async (req, res) => {
     try {
         await db.query('UPDATE users SET deleted = 1 WHERE id = ?', [req.params.id]);
         res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ── Config API ────────────────────────────────────────────────
+
+// Sensitive keys that should never be exposed to the frontend
+const SENSITIVE_KEYS = new Set([
+    'ADMIN_PASSWORD', 'VIEW_PASSWORD',
+    'DB_HOST', 'DB_PORT', 'DB_USER', 'DB_PASSWORD', 'DB_NAME',
+    'MSSQL_USER', 'MSSQL_PASSWORD', 'MSSQL_SERVER', 'MSSQL_DATABASE', 'MSSQL_PORT',
+    'SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM',
+    'PORT'
+]);
+
+// Settings that require a server restart to take effect
+const RESTART_REQUIRED = new Set([
+    'VERIFICATION_INTERVAL_SECONDS', 'AUTO_OFF_TIME',
+    'MSSQL_SYNC_HOUR', 'MSSQL_SYNC_ENABLED',
+    'SMTP_HOST', 'SMTP_PORT', 'SMTP_SECURE', 'SMTP_USER', 'SMTP_PASSWORD', 'SMTP_FROM',
+    'PORT'
+]);
+
+const ENV_PATH = path.join(__dirname, '.env');
+
+function readEnvFile() {
+    if (!fs.existsSync(ENV_PATH)) return {};
+    const raw = fs.readFileSync(ENV_PATH, 'utf-8');
+    const result = {};
+    for (const line of raw.split('\n')) {
+        const trimmed = line.trim();
+        if (!trimmed || trimmed.startsWith('#')) continue;
+        const eqIdx = trimmed.indexOf('=');
+        if (eqIdx === -1) continue;
+        const key = trimmed.slice(0, eqIdx).trim();
+        let val = trimmed.slice(eqIdx + 1).trim();
+        // Strip surrounding quotes
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+            val = val.slice(1, -1);
+        }
+        result[key] = val;
+    }
+    return result;
+}
+
+function writeEnvFile(updates) {
+    let raw = fs.existsSync(ENV_PATH) ? fs.readFileSync(ENV_PATH, 'utf-8') : '';
+    const lines = raw.split('\n');
+
+    for (const [key, value] of Object.entries(updates)) {
+        let found = false;
+        for (let i = 0; i < lines.length; i++) {
+            const trimmed = lines[i].trim();
+            if (!trimmed || trimmed.startsWith('#')) continue;
+            const eqIdx = trimmed.indexOf('=');
+            if (eqIdx === -1) continue;
+            if (trimmed.slice(0, eqIdx).trim() === key) {
+                lines[i] = `${key}=${value}`;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            lines.push(`${key}=${value}`);
+        }
+    }
+
+    fs.writeFileSync(ENV_PATH, lines.join('\n') + '\n', 'utf-8');
+    // Also update process.env so runtime checks pick up changes
+    for (const [key, value] of Object.entries(updates)) {
+        process.env[key] = value;
+    }
+}
+
+// GET: read current config (non-sensitive keys only)
+app.get('/api/config', (req, res) => {
+    try {
+        const all = readEnvFile();
+        const safe = {};
+        for (const [key, value] of Object.entries(all)) {
+            if (!SENSITIVE_KEYS.has(key)) {
+                safe[key] = { value, requiresRestart: RESTART_REQUIRED.has(key) };
+            }
+        }
+        res.json(safe);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// PUT: update config (admin password required)
+app.put('/api/config', (req, res) => {
+    const { password, updates } = req.body;
+    if (password !== ADMIN_PASSWORD) {
+        return res.status(403).json({ error: 'Niepoprawne hasło serwisowe' });
+    }
+    if (!updates || typeof updates !== 'object') {
+        return res.status(400).json({ error: 'Missing or invalid "updates" object' });
+    }
+
+    try {
+        // Reject sensitive keys
+        const safeUpdates = {};
+        for (const [key, value] of Object.entries(updates)) {
+            if (SENSITIVE_KEYS.has(key)) {
+                return res.status(400).json({ error: `Cannot modify "${key}" via API` });
+            }
+            safeUpdates[key] = String(value);
+        }
+
+        writeEnvFile(safeUpdates);
+        console.log('[CONFIG] Updated:', Object.keys(safeUpdates).join(', '));
+        res.json({ success: true, updated: Object.keys(safeUpdates) });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }

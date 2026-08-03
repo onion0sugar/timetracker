@@ -27,13 +27,11 @@
             </div>
             <div class="admin-controls">
                 <button id="adminLoginBtn" class="btn-secondary">Zaloguj do serwisu</button>
+                <button id="addUserBtn" class="btn-add-user admin-only">+ Dodaj Użytkownika</button>
+                <button id="configBtn" class="btn-secondary admin-only">⚙ Konfiguracja</button>
                 <button id="adminLogoutBtn" class="btn-secondary admin-only btn-danger-soft">Wyloguj</button>
             </div>
         </header>
-
-        <div class="admin-only" style="margin-bottom: 2rem;">
-            <button id="addUserBtn" class="btn-add-user">+ Dodaj Użytkownika</button>
-        </div>
 
         <!-- Search Bar -->
         <div class="search-bar" id="searchBar">
@@ -102,6 +100,67 @@
             <div class="modal-actions">
                 <button id="confirmLoginBtn" class="btn-danger">Zaloguj</button>
                 <button id="cancelLoginBtn" class="btn-secondary">Anuluj</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Config Modal -->
+    <div id="configModal" class="modal">
+        <div class="modal-content" style="max-width: 560px; text-align: left;">
+            <h3 style="margin-bottom: 0.3rem;">⚙ Konfiguracja</h3>
+            <p style="font-size: 0.8rem; opacity: 0.5; margin-bottom: 1.2rem;">Zmiany oznaczone 🔒 wymagają restartu serwera.</p>
+
+            <fieldset style="border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                <legend style="font-weight: 700; font-size: 0.85rem; padding: 0 8px;">Weryfikacja stanów</legend>
+                <div class="config-row">
+                    <label for="cfgVerificationEnabled">Włączona</label>
+                    <input type="checkbox" id="cfgVerificationEnabled">
+                </div>
+                <div class="config-row">
+                    <label for="cfgVerificationInterval">Interwał (sekundy) 🔒</label>
+                    <input type="number" id="cfgVerificationInterval" min="5" max="300" style="width: 80px;">
+                </div>
+                <div class="config-row">
+                    <label for="cfgAutoCorrect">Auto-korekta przełącznika</label>
+                    <input type="checkbox" id="cfgAutoCorrect">
+                </div>
+            </fieldset>
+
+            <fieldset style="border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                <legend style="font-weight: 700; font-size: 0.85rem; padding: 0 8px;">Harmonogram</legend>
+                <div class="config-row">
+                    <label for="cfgAutoOffTime">Auto-OFF codziennie o 🔒</label>
+                    <input type="time" id="cfgAutoOffTime" style="width: 120px;">
+                </div>
+                <div class="config-row">
+                    <label for="cfgSyncHour">Godzina sync WMS 🔒</label>
+                    <input type="number" id="cfgSyncHour" min="0" max="23" style="width: 70px;">
+                </div>
+            </fieldset>
+
+            <fieldset style="border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 1rem; margin-bottom: 1rem;">
+                <legend style="font-weight: 700; font-size: 0.85rem; padding: 0 8px;">Powiadomienia email</legend>
+                <div class="config-row">
+                    <label for="cfgEmailEnabled">Włączone</label>
+                    <input type="checkbox" id="cfgEmailEnabled">
+                </div>
+                <div class="config-row">
+                    <label for="cfgNotifyEmail">Email odbiorcy</label>
+                    <input type="email" id="cfgNotifyEmail" placeholder="admin@example.com" style="flex:1;">
+                </div>
+            </fieldset>
+
+            <fieldset style="border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; padding: 1rem; margin-bottom: 1.5rem;">
+                <legend style="font-weight: 700; font-size: 0.85rem; padding: 0 8px;">Sync WMS</legend>
+                <div class="config-row">
+                    <label for="cfgSyncEnabled">Włączony 🔒</label>
+                    <input type="checkbox" id="cfgSyncEnabled">
+                </div>
+            </fieldset>
+
+            <div class="modal-actions">
+                <button id="configSaveBtn">Zapisz</button>
+                <button id="configCancelBtn" class="btn-secondary">Anuluj</button>
             </div>
         </div>
     </div>

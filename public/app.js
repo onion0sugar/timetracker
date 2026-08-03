@@ -275,6 +275,78 @@ function adminLogout() {
     updateAdminUI();
 }
 
+// ── Config modal ────────────────────────────────────────
+
+async function openConfigModal() {
+    try {
+        const res = await fetch('/api/config');
+        if (!res.ok) throw new Error('Failed to fetch config');
+        const config = await res.json();
+
+        // Weryfikacja
+        document.getElementById('cfgVerificationEnabled').checked = config.VERIFICATION_ENABLED?.value === 'true';
+        document.getElementById('cfgVerificationInterval').value = config.VERIFICATION_INTERVAL_SECONDS?.value || '30';
+        document.getElementById('cfgAutoCorrect').checked = config.AUTO_CORRECT_MISMATCHES?.value === 'true';
+
+        // Harmonogram
+        document.getElementById('cfgAutoOffTime').value = config.AUTO_OFF_TIME?.value || '23:59';
+        document.getElementById('cfgSyncHour').value = config.MSSQL_SYNC_HOUR?.value || '20';
+
+        // Email
+        document.getElementById('cfgEmailEnabled').checked = config.EMAIL_NOTIFICATIONS_ENABLED?.value === 'true';
+        document.getElementById('cfgNotifyEmail').value = config.VERIFICATION_NOTIFY_EMAIL?.value || '';
+
+        // WMS Sync
+        document.getElementById('cfgSyncEnabled').checked = config.MSSQL_SYNC_ENABLED?.value === 'true';
+
+        document.getElementById('configModal').classList.add('active');
+    } catch (err) {
+        console.error('Error loading config:', err);
+        alert('Nie udało się załadować konfiguracji');
+    }
+}
+
+function closeConfigModal() {
+    document.getElementById('configModal').classList.remove('active');
+}
+
+async function saveConfig() {
+    const password = sessionStorage.getItem('adminPassword');
+    if (!password) {
+        alert('Brak hasła administratora w sesji. Zaloguj się ponownie.');
+        return;
+    }
+
+    const updates = {
+        VERIFICATION_ENABLED: document.getElementById('cfgVerificationEnabled').checked ? 'true' : 'false',
+        VERIFICATION_INTERVAL_SECONDS: document.getElementById('cfgVerificationInterval').value,
+        AUTO_CORRECT_MISMATCHES: document.getElementById('cfgAutoCorrect').checked ? 'true' : 'false',
+        AUTO_OFF_TIME: document.getElementById('cfgAutoOffTime').value,
+        MSSQL_SYNC_HOUR: document.getElementById('cfgSyncHour').value,
+        EMAIL_NOTIFICATIONS_ENABLED: document.getElementById('cfgEmailEnabled').checked ? 'true' : 'false',
+        VERIFICATION_NOTIFY_EMAIL: document.getElementById('cfgNotifyEmail').value,
+        MSSQL_SYNC_ENABLED: document.getElementById('cfgSyncEnabled').checked ? 'true' : 'false'
+    };
+
+    try {
+        const res = await fetch('/api/config', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password, updates })
+        });
+
+        if (res.ok) {
+            closeConfigModal();
+        } else {
+            const err = await res.json();
+            alert('Błąd: ' + err.error);
+        }
+    } catch (err) {
+        console.error('Error saving config:', err);
+        alert('Błąd połączenia z serwerem');
+    }
+}
+
 function closeAdminModal() {
     document.getElementById('adminModal').classList.remove('active');
 }
@@ -632,6 +704,11 @@ if (document.getElementById('userGrid')) {
     document.getElementById('confirmLoginBtn').addEventListener('click', confirmLogin);
     document.getElementById('cancelLoginBtn').addEventListener('click', closeAdminModal);
     document.getElementById('addUserBtn').addEventListener('click', addUser);
+    document.getElementById('configBtn').addEventListener('click', openConfigModal);
+
+    // Config Modal Event Listeners
+    document.getElementById('configSaveBtn').addEventListener('click', saveConfig);
+    document.getElementById('configCancelBtn').addEventListener('click', closeConfigModal);
 
     // Edit Modal Event Listeners
     document.getElementById('confirmEditBtn').addEventListener('click', saveUserChanges);
@@ -662,6 +739,7 @@ if (document.getElementById('userGrid')) {
         if (e.key === 'Escape') {
             closeAdminModal();
             closeEditModal();
+            closeConfigModal();
         }
     });
 
