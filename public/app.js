@@ -61,6 +61,13 @@ function renderUsers() {
         return true;
     });
 
+    // Sort: active users (not OFF, not null) at the top
+    filteredUsers.sort((a, b) => {
+        const aActive = a.current_state && a.current_state !== 'OFF' ? 1 : 0;
+        const bActive = b.current_state && b.current_state !== 'OFF' ? 1 : 0;
+        return bActive - aActive;
+    });
+
     grid.innerHTML = filteredUsers.map(user => {
         const stateClass = getStateClass(user.current_state);
         const currentState = user.current_state || 'OFF';

@@ -50,6 +50,34 @@ async function resetAllToOff() {
     }
 }
 
+/**
+ * Auto-correct a user's switch state to match their last WMS scan.
+ * Closes the current active session and starts a new one with the expected state.
+ */
+async function autoCorrectState(userId, userName, expectedState) {
+    try {
+        // Close current active session
+        await db.query(`
+            UPDATE activity_logs 
+            SET end_time = NOW(), 
+                duration_seconds = TIMESTAMPDIFF(SECOND, start_time, NOW()) 
+            WHERE user_id = ? AND end_time IS NULL
+        `, [userId]);
+
+        // Start new session with corrected state
+        await db.query(
+            'INSERT INTO activity_logs (user_id, user_name, state, start_time) VALUES (?, ?, ?, NOW())',
+            [userId, userName, expectedState]
+        );
+
+        // Broadcast so all clients refresh
+        broadcastUpdate({ userId });
+        console.log(`[AUTO-CORRECT] ${userName}: przełącznik ustawiony na "${expectedState}" (zgodnie ze skanem WMS)`);
+    } catch (err) {
+        console.error(`[AUTO-CORRECT] Failed to correct state for user ${userName}:`, err.message);
+    }
+}
+
 app.use(compression());
 app.use(cors());
 app.use(express.json());
@@ -275,10 +303,11 @@ async function startServer() {
             // 4. Run initial sync on startup
             syncWmsData().catch(err => console.error('Initial sync failed:', err));
 
-            // 5. Schedule state verification every 30 seconds
-            cron.schedule('*/30 * * * * *', async () => {
+            // 5. Schedule state verification
+            const verificationInterval = parseInt(process.env.VERIFICATION_INTERVAL_SECONDS, 10) || 30;
+            cron.schedule(`*/${verificationInterval} * * * * *`, async () => {
                 try {
-                    const mismatches = await verifySwitchStates(30);
+                    const mismatches = await verifySwitchStates(verificationInterval);
                     const newMismatches = [];
 
                     for (const m of mismatches) {
@@ -307,12 +336,21 @@ async function startServer() {
                         sendMismatchNotification(newMismatches).catch(err =>
                             console.error('[VERIFICATION] Email notification failed:', err.message)
                         );
+
+                        // Auto-correct switch states if enabled
+                        if (process.env.AUTO_CORRECT_MISMATCHES === 'true') {
+                            for (const m of newMismatches) {
+                                autoCorrectState(m.userId, m.userName, m.expectedState).catch(err =>
+                                    console.error(`[AUTO-CORRECT] Error for ${m.userName}:`, err.message)
+                                );
+                            }
+                        }
                     }
                 } catch (err) {
                     console.error('[VERIFICATION] Cron error:', err);
                 }
             });
-            console.log('State verification scheduled every 30 seconds.');
+            console.log(`State verification scheduled every ${verificationInterval} seconds.`);
 
             // 6. Schedule automated OFF reset
             const autoOffTime = (process.env.AUTO_OFF_TIME || '23:59').trim();
