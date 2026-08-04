@@ -112,6 +112,7 @@ header {
 
 .btn-add-user {
     background: #27ae60 !important;
+    min-width: 200px;
 }
 
 .btn-add-user:hover {
@@ -415,57 +416,6 @@ button:active {
 .open-link-btn:hover {
     background: rgba(46, 204, 113, 0.2) !important;
     box-shadow: 0 3px 10px rgba(46, 204, 113, 0.2) !important;
-}
-
-/* ── Config modal ───────────────────────────────────────── */
-.config-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.config-row:last-child {
-    border-bottom: none;
-}
-
-.config-row label {
-    font-size: 0.82rem;
-    opacity: 0.8;
-    white-space: nowrap;
-}
-
-.config-row input[type="number"],
-.config-row input[type="email"],
-.config-row input[type="time"] {
-    padding: 6px 10px;
-    background: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 7px;
-    color: white;
-    font-size: 0.82rem;
-    outline: none;
-    text-align: right;
-}
-
-.config-row input[type="number"]:focus,
-.config-row input[type="email"]:focus,
-.config-row input[type="time"]:focus {
-    border-color: var(--primary);
-}
-
-.config-row input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: var(--primary);
-    cursor: pointer;
-}
-
-#configModal fieldset legend {
-    color: var(--primary);
-    opacity: 0.7;
 }
 
 /* Uniform height for action buttons + expand toggle */
@@ -842,12 +792,6 @@ button:active {
 
 .btn-secondary:hover {
     background: rgba(255, 255, 255, 0.2);
-}
-
-#configBtn {
-    text-transform: none;
-    letter-spacing: 0;
-    font-weight: 600;
 }
 
 /* Admin Visibility */
