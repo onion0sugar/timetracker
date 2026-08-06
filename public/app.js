@@ -30,8 +30,8 @@ function toMinutes(t) {
 
 // Build an inline SVG timeline bar from activity segments
 function buildTimelineSVG(segments, width, height) {
-    width = width || 280;
-    height = height || 22;
+    width = width || 400;
+    height = height || 26;
     const DAY_MINUTES = 24 * 60;
 
     // Build rects from real segments
