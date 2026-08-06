@@ -313,9 +313,11 @@ button:active {
 
 /* ── Mini Timeline SVG ──────────────────────────────────── */
 .mini-timeline {
-    flex: 0 1 280px;
+    flex: 1;
     min-width: 140px;
-    margin: 0 0.5rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     opacity: 0.85;
     transition: opacity 0.2s;
 }
