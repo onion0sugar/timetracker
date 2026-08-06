@@ -29,31 +29,38 @@ function toMinutes(t) {
 }
 
 // Build an inline SVG timeline bar from activity segments
-function buildTimelineSVG(segments, width, height) {
-    width = width || 400;
-    height = height || 26;
-    const DAY_MINUTES = 24 * 60;
+function buildTimelineSVG(segments) {
+    const VIEW_WIDTH = 1300;
+    const VIEW_HEIGHT = 26;
+    // Show hours 05:00–18:00 (minutes 300–1080)
+    const RANGE_START = 300;
+    const RANGE_END = 1080;
+    const RANGE_MINUTES = RANGE_END - RANGE_START;
 
-    // Build rects from real segments
+    // Build rects from real segments, clamped to visible range
     const rects = segments.map(seg => {
         const startMin = toMinutes(seg.start_time);
         const endMin = toMinutes(seg.end_time);
-        const x = (startMin / DAY_MINUTES) * width;
-        const w = Math.max(((endMin - startMin) / DAY_MINUTES) * width, 1.5);
+        const clampedStart = Math.max(startMin, RANGE_START);
+        const clampedEnd = Math.min(endMin, RANGE_END);
+        if (clampedEnd <= clampedStart) return '';
+        const x = ((clampedStart - RANGE_START) / RANGE_MINUTES) * VIEW_WIDTH;
+        const w = ((clampedEnd - clampedStart) / RANGE_MINUTES) * VIEW_WIDTH;
         const color = TIMELINE_COLORS[seg.state] || '#999';
         const label = `${seg.state}: ${new Date(seg.start_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}–${new Date(seg.end_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}`;
-        return `<rect x="${x.toFixed(1)}" y="2" width="${w.toFixed(1)}" height="${height - 4}" rx="2" fill="${color}"><title>${label}</title></rect>`;
+        return `<rect x="${x.toFixed(1)}" y="2" width="${Math.max(w, 2).toFixed(1)}" height="${VIEW_HEIGHT - 4}" rx="2" fill="${color}"><title>${label}</title></rect>`;
     }).join('');
 
-    // Subtle grid lines every 6 hours
-    const gridLines = [0, 6, 12, 18, 24].map(h => {
-        const x = (h * 60 / DAY_MINUTES) * width;
-        return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${height}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
-    }).join('');
+    // Grid lines for each hour 05:00 through 18:00
+    const gridLines = [];
+    for (let h = 5; h <= 18; h++) {
+        const x = ((h * 60 - RANGE_START) / RANGE_MINUTES) * VIEW_WIDTH;
+        gridLines.push(`<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${VIEW_HEIGHT}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`);
+    }
 
-    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="display:block;">
-        <rect x="0" y="0" width="${width}" height="${height}" fill="rgba(255,255,255,0.03)" rx="3"/>
-        ${gridLines}
+    return `<svg viewBox="0 0 ${VIEW_WIDTH} ${VIEW_HEIGHT}" preserveAspectRatio="none" style="display:block;width:100%;height:${VIEW_HEIGHT}px;">
+        <rect x="0" y="0" width="${VIEW_WIDTH}" height="${VIEW_HEIGHT}" fill="rgba(255,255,255,0.03)" rx="3"/>
+        ${gridLines.join('')}
         ${rects}
     </svg>`;
 }

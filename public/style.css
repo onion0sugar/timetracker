@@ -318,10 +318,13 @@ button:active {
     flex: 1;
     min-width: 200px;
     display: flex;
-    justify-content: center;
     align-items: center;
     opacity: 0.85;
     transition: opacity 0.2s;
+}
+
+.mini-timeline svg {
+    width: 100%;
 }
 
 .mini-timeline:hover {
