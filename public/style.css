@@ -345,6 +345,65 @@ button:active {
     font-style: italic;
 }
 
+/* ── Expand toggle ───────────────────────────────────────── */
+.expand-toggle {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 7px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.65rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.expand-toggle:hover {
+    background: rgba(255, 255, 255, 0.12);
+    color: rgba(255, 255, 255, 0.8);
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* ── Expandable details row ─────────────────────────────── */
+.user-card-details {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    border-bottom: 1px solid transparent;
+    transition-property: max-height, border-color;
+}
+
+.user-card-details.expanded {
+    max-height: 120px;
+    border-bottom-color: rgba(255, 255, 255, 0.06);
+}
+
+.user-card-details-inner {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 20px;
+    padding: 0 0.5rem 0 1.2rem;
+    align-items: center;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.user-card-details.expanded .user-card-details-inner {
+    padding: 0.65rem 0.5rem 0.75rem 1.2rem;
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s ease 0.08s, transform 0.3s ease 0.08s;
+}
+
 /* ── Admin action column ─────────────────────────────────── */
 .user-card-actions {
     display: flex;
@@ -354,21 +413,21 @@ button:active {
     margin-left: auto;
 }
 
-.copy-link {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.45);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    transition: color 0.2s;
-    padding: 4px 6px;
-    border-radius: 6px;
+.open-link-btn:hover {
+    background: rgba(46, 204, 113, 0.2) !important;
+    box-shadow: 0 3px 10px rgba(46, 204, 113, 0.2) !important;
 }
 
-.copy-link:hover {
-    color: rgba(255, 255, 255, 0.8);
-    background: rgba(255, 255, 255, 0.06);
+/* Uniform height for action buttons + expand toggle */
+.user-card-actions button,
+.expand-toggle {
+    height: 30px;
+    line-height: 1;
+    transform: none !important;
+}
+
+.user-card-actions button:hover {
+    transform: none !important;
 }
 
 /* Filter Bar */

@@ -9,6 +9,7 @@ let currentFilter = 'all';
 let currentSearch = '';
 let userToEdit = null;
 let currentStateName = null;
+let expandedUserId = null;
 
 // Helper to normalize Polish state names for CSS classes
 function getStateClass(state) {
@@ -61,12 +62,23 @@ function renderUsers() {
         return true;
     });
 
+    // Sort: active users (not OFF, not null) at the top
+    filteredUsers.sort((a, b) => {
+        const aActive = a.current_state && a.current_state !== 'OFF' ? 1 : 0;
+        const bActive = b.current_state && b.current_state !== 'OFF' ? 1 : 0;
+        return bActive - aActive;
+    });
+
+    const prevExpandedId = expandedUserId;
+
     grid.innerHTML = filteredUsers.map(user => {
         const stateClass = getStateClass(user.current_state);
         const currentState = user.current_state || 'OFF';
         const displayName = (user.given_name && user.given_name.trim() !== '') ? user.given_name : user.name;
+        const hasStats = user.daily_stats && user.daily_stats.length > 0;
+        const isExpanded = user.id === prevExpandedId;
 
-        const statsHtml = user.daily_stats && user.daily_stats.length > 0
+        const statsHtml = hasStats
             ? user.daily_stats.map(s => `
                 <div class="user-stat-item">
                     <span class="user-stat-label">${s.state}:</span>
@@ -84,14 +96,19 @@ function renderUsers() {
 
                 <span class="status-badge status-${stateClass}">${currentState}</span>
 
-                <div class="user-card-stats">
-                    ${statsHtml}
-                </div>
-
+                
                 <div class="user-card-actions admin-only">
-                    <div class="copy-link" data-id="${user.id}" title="Kopiuj link"><i class="ph ph-link"></i></div>
-                    <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
-                    <button class="delete-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(235,77,75,0.12); color: #eb6d6b; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(235,77,75,0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
+                <button class="open-link-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(46,204,113,0.12); color: #5bd98d; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(46,204,113,0.3); cursor: pointer; transition: 0.2s;">LINK</button>
+                <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
+                <button class="delete-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(235,77,75,0.12); color: #eb6d6b; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(235,77,75,0.3); cursor: pointer; transition: 0.2s;">USUŃ</button>
+                <button class="expand-toggle" data-id="${user.id}" title="${isExpanded ? 'Zwiń' : 'Rozwiń'}">
+                    ${isExpanded ? '▲' : '▼'}
+                </button>
+                </div>
+            </div>
+            <div class="user-card-details${isExpanded ? ' expanded' : ''}" id="details-${user.id}">
+                <div class="user-card-details-inner">
+                    ${statsHtml}
                 </div>
             </div>
         `;
@@ -104,6 +121,31 @@ function renderUsers() {
 
     // Refresh admin visibility
     updateAdminUI();
+}
+
+function toggleUserDetails(id) {
+    if (expandedUserId === id) {
+        // Collapse currently expanded
+        const details = document.getElementById(`details-${id}`);
+        if (details) details.classList.remove('expanded');
+        const toggle = document.querySelector(`.expand-toggle[data-id="${id}"]`);
+        if (toggle) toggle.textContent = '▼';
+        expandedUserId = null;
+    } else {
+        // Collapse previous
+        if (expandedUserId) {
+            const prevDetails = document.getElementById(`details-${expandedUserId}`);
+            if (prevDetails) prevDetails.classList.remove('expanded');
+            const prevToggle = document.querySelector(`.expand-toggle[data-id="${expandedUserId}"]`);
+            if (prevToggle) prevToggle.textContent = '▼';
+        }
+        // Expand new
+        const details = document.getElementById(`details-${id}`);
+        if (details) details.classList.add('expanded');
+        const toggle = document.querySelector(`.expand-toggle[data-id="${id}"]`);
+        if (toggle) toggle.textContent = '▲';
+        expandedUserId = id;
+    }
 }
 
 function addUser() {
@@ -271,7 +313,7 @@ async function saveUserChanges() {
     try {
         const method = userToEdit ? 'PUT' : 'POST';
         const url = userToEdit ? `/api/users/${userToEdit.id}` : '/api/users';
-        
+
         const response = await fetch(url, {
             method: method,
             headers: { 'Content-Type': 'application/json' },
@@ -374,13 +416,13 @@ async function initUserSwitch(id) {
                     </div>
                 `;
             }
-            
+
             const heading = document.getElementById('userNameHeading');
             if (heading) heading.textContent = 'Konto niedostępne';
-            
+
             const logHistory = document.getElementById('logHistory');
             if (logHistory) logHistory.innerHTML = '';
-            
+
             stopTimer();
             if (window.userRefreshInterval) clearInterval(window.userRefreshInterval);
             if (window.appSSE) window.appSSE.close();
@@ -427,7 +469,7 @@ function startUserRefresh(id) {
 async function setPos(pos, state) {
     const slider = document.getElementById('slider');
     const stateDisplay = document.getElementById('currentStateName');
-    
+
     // 1. Guard clause: prevents redundant API calls
     if (state === currentStateName) return;
 
@@ -439,7 +481,7 @@ async function setPos(pos, state) {
     slider.className = `switch-slider pos${pos}`;
     stateDisplay.textContent = `Stan: ${state}`;
     updateTiles(state);
-    
+
     // Update global state immediately to prevent double-clicks
     currentStateName = state;
 
@@ -459,19 +501,19 @@ async function setPos(pos, state) {
             // Recommendation: use a server-provided timestamp if precision matters
             startTimer(new Date());
         }
-        
+
         // Refresh history
         initUserSwitch(currentUserId);
 
     } catch (err) {
         console.error('Error setting state:', err);
-        
+
         // 4. Rollback UI on failure
         currentStateName = previousState;
         slider.className = previousPosClass;
         stateDisplay.textContent = `Stan: ${previousState}`;
         updateTiles(previousState);
-        
+
         alert("Wystąpił błąd przy zmianie stanu. Spróbuj ponownie.");
     }
 }
@@ -539,7 +581,8 @@ if (document.getElementById('userGrid')) {
     grid.addEventListener('click', (e) => {
         const deleteBtn = e.target.closest('.delete-user-btn');
         const editBtn = e.target.closest('.edit-user-btn');
-        const copyBtn = e.target.closest('.copy-link');
+        const linkBtn = e.target.closest('.open-link-btn');
+        const expandBtn = e.target.closest('.expand-toggle');
 
         if (deleteBtn) {
             const id = deleteBtn.getAttribute('data-id');
@@ -547,9 +590,12 @@ if (document.getElementById('userGrid')) {
         } else if (editBtn) {
             const id = editBtn.getAttribute('data-id');
             openEditModal(id);
-        } else if (copyBtn) {
-            const id = copyBtn.getAttribute('data-id');
-            copyUserLink(id);
+        } else if (linkBtn) {
+            const id = linkBtn.getAttribute('data-id');
+            window.open(`/user.html?id=${id}`, '_blank');
+        } else if (expandBtn) {
+            const id = expandBtn.getAttribute('data-id');
+            toggleUserDetails(id);
         }
     });
 
