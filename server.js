@@ -168,9 +168,19 @@ app.get('/api/users', async (req, res) => {
             GROUP BY user_id, state
         `);
 
+        // Fetch today's timeline segments (raw activity_log rows)
+        const [timelineRows] = await db.query(`
+            SELECT user_id, state, start_time,
+                   COALESCE(end_time, NOW()) as end_time
+            FROM activity_logs
+            WHERE DATE(start_time) = CURDATE()
+            ORDER BY user_id, start_time ASC
+        `);
+
         const usersWithStats = users.map(user => ({
             ...user,
-            daily_stats: stats.filter(s => s.user_id === user.id)
+            daily_stats: stats.filter(s => s.user_id === user.id),
+            timeline: timelineRows.filter(t => t.user_id === user.id)
         }));
         res.json(usersWithStats);
     } catch (err) {

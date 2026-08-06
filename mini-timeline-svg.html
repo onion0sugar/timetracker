@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Mini oś czasu SVG — aktywność pracowników</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f5f6f8; padding: 24px; }
+  .employee-row {
+    display: flex;
+    align-items: center;
+    background: #fff;
+    border-radius: 8px;
+    padding: 10px 16px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .employee-name {
+    width: 160px;
+    font-weight: 600;
+    color: #222;
+  }
+  .mini-timeline {
+    flex: 1;
+    max-width: 320px;
+  }
+  .legend {
+    margin-top: 16px;
+    font-size: 13px;
+    color: #555;
+  }
+  .legend span {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    margin-right: 4px;
+    vertical-align: middle;
+  }
+</style>
+</head>
+<body>
+
+<h2>Aktywność pracowników — dzień: 2026-08-06</h2>
+<div id="employee-list"></div>
+
+<div class="legend">
+  <span style="background:#4caf50"></span> praca
+  <span style="background:#ff9800"></span> przerwa
+  <span style="background:#f44336"></span> nieobecność
+</div>
+
+<script>
+// ---- 1. Dane wejściowe (np. wynik zapytania do bazy / API) ----
+const employees = [
+  {
+    name: "Jan Kowalski",
+    segments: [
+      { start: "08:00", end: "12:00", type: "praca" },
+      { start: "12:00", end: "12:30", type: "przerwa" },
+      { start: "12:30", end: "16:00", type: "praca" }
+    ]
+  },
+  {
+    name: "Anna Nowak",
+    segments: [
+      { start: "09:00", end: "13:00", type: "praca" },
+      { start: "13:00", end: "13:15", type: "przerwa" },
+      { start: "13:15", end: "17:00", type: "praca" }
+    ]
+  },
+  {
+    name: "Piotr Wiśniewski",
+    segments: [
+      { start: "07:00", end: "11:00", type: "praca" },
+      { start: "11:00", end: "15:00", type: "nieobecność" },
+      { start: "15:00", end: "18:00", type: "praca" }
+    ]
+  }
+];
+
+const COLORS = {
+  "praca": "#4caf50",
+  "przerwa": "#ff9800",
+  "nieobecność": "#f44336"
+};
+
+// ---- 2. Konwersja "HH:MM" na minuty od 00:00 ----
+function toMinutes(t) {
+  const [h, m] = t.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// ---- 3. Generowanie SVG dla jednego pracownika ----
+function buildTimelineSVG(segments, width = 300, height = 24) {
+  const DAY_MINUTES = 24 * 60;
+  const rects = segments.map(seg => {
+    const startMin = toMinutes(seg.start);
+    const endMin = toMinutes(seg.end);
+    const x = (startMin / DAY_MINUTES) * width;
+    const w = ((endMin - startMin) / DAY_MINUTES) * width;
+    const color = COLORS[seg.type] || "#999";
+    return `<rect x="${x.toFixed(1)}" y="2" width="${w.toFixed(1)}" height="${height - 4}" rx="3" fill="${color}">
+              <title>${seg.type}: ${seg.start}–${seg.end}</title>
+            </rect>`;
+  }).join("");
+
+  // tło (cała doba) + siatka godzinowa co 6h
+  const gridLines = [0, 6, 12, 18, 24].map(h => {
+    const x = (h * 60 / DAY_MINUTES) * width;
+    return `<line x1="${x}" y1="0" x2="${x}" y2="${height}" stroke="#e0e0e0" stroke-width="1"/>`;
+  }).join("");
+
+  return `
+    <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+      <rect x="0" y="0" width="${width}" height="${height}" fill="#f0f0f0" rx="3"/>
+      ${gridLines}
+      ${rects}
+    </svg>`;
+}
+
+// ---- 4. Renderowanie listy pracowników ----
+const container = document.getElementById("employee-list");
+employees.forEach(emp => {
+  const row = document.createElement("div");
+  row.className = "employee-row";
+  row.innerHTML = `
+    <div class="employee-name">${emp.name}</div>
+    <div class="mini-timeline">${buildTimelineSVG(emp.segments)}</div>
+  `;
+  container.appendChild(row);
+});
+</script>
+</body>
+</html>

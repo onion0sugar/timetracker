@@ -11,6 +11,53 @@ let userToEdit = null;
 let currentStateName = null;
 let expandedUserId = null;
 
+// Timeline colors — maps state names to SVG fill colors
+const TIMELINE_COLORS = {
+    'Zbieranie': '#27ae60',
+    'Pakowanie': '#2980b9',
+    'Rozkładanie': '#8e44ad',
+    'Inne': '#f39c12',
+    'Przerwa': '#d35400',
+    'Palety': '#16a085',
+    'OFF': '#576574'
+};
+
+// Convert "HH:MM:SS" or ISO timestamp to minutes from midnight
+function toMinutes(t) {
+    const d = new Date(t);
+    return d.getHours() * 60 + d.getMinutes() + d.getSeconds() / 60;
+}
+
+// Build an inline SVG timeline bar from activity segments
+function buildTimelineSVG(segments, width, height) {
+    width = width || 280;
+    height = height || 22;
+    const DAY_MINUTES = 24 * 60;
+
+    // Build rects from real segments
+    const rects = segments.map(seg => {
+        const startMin = toMinutes(seg.start_time);
+        const endMin = toMinutes(seg.end_time);
+        const x = (startMin / DAY_MINUTES) * width;
+        const w = Math.max(((endMin - startMin) / DAY_MINUTES) * width, 1.5);
+        const color = TIMELINE_COLORS[seg.state] || '#999';
+        const label = `${seg.state}: ${new Date(seg.start_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}–${new Date(seg.end_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}`;
+        return `<rect x="${x.toFixed(1)}" y="2" width="${w.toFixed(1)}" height="${height - 4}" rx="2" fill="${color}"><title>${label}</title></rect>`;
+    }).join('');
+
+    // Subtle grid lines every 6 hours
+    const gridLines = [0, 6, 12, 18, 24].map(h => {
+        const x = (h * 60 / DAY_MINUTES) * width;
+        return `<line x1="${x.toFixed(1)}" y1="0" x2="${x.toFixed(1)}" y2="${height}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
+    }).join('');
+
+    return `<svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="display:block;">
+        <rect x="0" y="0" width="${width}" height="${height}" fill="rgba(255,255,255,0.03)" rx="3"/>
+        ${gridLines}
+        ${rects}
+    </svg>`;
+}
+
 // Helper to normalize Polish state names for CSS classes
 function getStateClass(state) {
     if (!state) return 'off';
@@ -96,7 +143,8 @@ function renderUsers() {
 
                 <span class="status-badge status-${stateClass}">${currentState}</span>
 
-                
+                <div class="mini-timeline">${buildTimelineSVG(user.timeline || [])}</div>
+
                 <div class="user-card-actions admin-only">
                 <button class="open-link-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(46,204,113,0.12); color: #5bd98d; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(46,204,113,0.3); cursor: pointer; transition: 0.2s;">LINK</button>
                 <button class="edit-user-btn" data-id="${user.id}" style="padding: 5px 11px; background: rgba(52,152,219,0.12); color: #5babd9; border-radius: 7px; font-size: 0.72rem; border: 1px solid rgba(52,152,219,0.3); cursor: pointer; transition: 0.2s;">EDYTUJ</button>
