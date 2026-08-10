@@ -47,9 +47,7 @@ function buildTimelineSVG(segments) {
         const x = ((clampedStart - RANGE_START) / RANGE_MINUTES) * VIEW_WIDTH;
         const w = ((clampedEnd - clampedStart) / RANGE_MINUTES) * VIEW_WIDTH;
         const color = TIMELINE_COLORS[seg.state] || '#999';
-        const scans = Number(seg.scan_count) || 0;
-        const scanLabel = scans > 0 ? ` · ${scans} pozycji` : '';
-        const label = `${seg.state}: ${new Date(seg.start_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}–${new Date(seg.end_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}${scanLabel}`;
+        const label = `${seg.state}: ${new Date(seg.start_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}–${new Date(seg.end_time).toLocaleTimeString('pl-PL', {hour:'2-digit',minute:'2-digit'})}`;
         return `<rect x="${x.toFixed(1)}" y="2" width="${Math.max(w, 2).toFixed(1)}" height="${VIEW_HEIGHT - 4}" rx="2" fill="${color}"><title>${label}</title></rect>`;
     }).join('');
 
