@@ -406,16 +406,40 @@ function updateAdminUI() {
 async function viewLogin() {
     const pass = document.getElementById('viewPasswordInput').value;
     try {
-        const response = await fetch('/api/login', {
+        // Try view password first
+        let response = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ password: pass })
         });
 
+        if (!response.ok) {
+            // If view password fails, try admin password — admin can also view
+            response = await fetch('/api/admin-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pass })
+            });
+        }
+
         if (response.ok) {
             isViewAuthenticated = true;
             sessionStorage.setItem('isViewAuthenticated', 'true');
+
+            // If the password also works as admin, log in as admin too
+            const adminCheck = await fetch('/api/admin-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ password: pass })
+            });
+            if (adminCheck.ok) {
+                isAdmin = true;
+                sessionStorage.setItem('isAdmin', 'true');
+                sessionStorage.setItem('adminPassword', pass);
+            }
+
             updateViewUI();
+            updateAdminUI();
             startDashboardRefresh();
         } else {
             alert("Błędne hasło dostępu!");
