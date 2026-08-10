@@ -168,13 +168,23 @@ app.get('/api/users', async (req, res) => {
             GROUP BY user_id, state
         `);
 
-        // Fetch today's timeline segments (raw activity_log rows)
+        // Fetch today's timeline segments (raw activity_log rows) with WMS scan counts
         const [timelineRows] = await db.query(`
-            SELECT user_id, state, start_time,
-                   COALESCE(end_time, NOW()) as end_time
-            FROM activity_logs
-            WHERE DATE(start_time) = CURDATE()
-            ORDER BY user_id, start_time ASC
+            SELECT al.user_id, al.state, al.start_time,
+                   COALESCE(al.end_time, NOW()) as end_time,
+                   (SELECT COUNT(*) FROM wms_data w
+                    WHERE w.user_name = al.user_name
+                      AND w.date_created_utc >= al.start_time
+                      AND w.date_created_utc < COALESCE(al.end_time, NOW())
+                      AND w.document_type = CASE al.state
+                          WHEN 'Zbieranie'   THEN 7
+                          WHEN 'Pakowanie'   THEN 8
+                          WHEN 'Rozkładanie' THEN 2
+                          ELSE NULL
+                      END) as scan_count
+            FROM activity_logs al
+            WHERE DATE(al.start_time) = CURDATE()
+            ORDER BY al.user_id, al.start_time ASC
         `);
 
         const usersWithStats = users.map(user => ({
