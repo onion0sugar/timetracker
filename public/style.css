@@ -233,18 +233,18 @@ button:active {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    min-width: 180px;
-    max-width: 160px;
+    min-width: 140px;
+    max-width: 220px;
     flex-shrink: 0;
 }
 
 .user-card-identity h3 {
     font-size: 0.95rem;
     font-weight: 700;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    word-break: break-word;
     margin: 0 0 3px;
+    line-height: 1.25;
 }
 
 .category-badge {
@@ -459,6 +459,7 @@ button:active {
     scrollbar-width: none;
     justify-content: center;
     align-items: center;
+    -webkit-overflow-scrolling: touch;
 }
 
 .filter-bar::-webkit-scrollbar {
@@ -902,9 +903,15 @@ body.admin-mode #adminLoginBtn {
         padding: 0.75rem 0.25rem;
     }
 
+    .filter-bar {
+        justify-content: flex-start;
+        padding: 10px 4px;
+    }
+
     .user-card-identity {
-        min-width: 100px;
-        max-width: 130px;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: calc(100% - 115px);
     }
 
     .form-group {
@@ -1001,9 +1008,15 @@ body.admin-mode #adminLoginBtn {
         padding: 0.7rem 0.25rem;
     }
 
+    .filter-bar {
+        justify-content: flex-start;
+        padding: 10px 2px;
+    }
+
     .user-card-identity {
-        min-width: 90px;
-        max-width: 110px;
+        flex: 1 1 auto;
+        min-width: 0;
+        max-width: calc(100% - 115px);
     }
 
     .user-card-stats {
