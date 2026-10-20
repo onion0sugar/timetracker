@@ -422,6 +422,25 @@ async function viewLogin() {
             });
         }
 
+        if (!response.ok) {
+            const userResponse = await fetch('/api/user-link', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: pass })
+            });
+
+            if (userResponse.ok) {
+                const user = await userResponse.json();
+                window.location.href = `/user.html?id=${encodeURIComponent(user.id)}`;
+                return;
+            }
+            if (userResponse.status !== 404) {
+                const error = await userResponse.json();
+                alert(error.error);
+                return;
+            }
+        }
+
         if (response.ok) {
             isViewAuthenticated = true;
             sessionStorage.setItem('isViewAuthenticated', 'true');
@@ -442,7 +461,7 @@ async function viewLogin() {
             updateAdminUI();
             startDashboardRefresh();
         } else {
-            alert("Błędne hasło dostępu!");
+            alert("Błędne hasło dostępu lub nie znaleziono użytkownika!");
         }
     } catch (err) {
         console.error('Login error:', err);

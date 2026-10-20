@@ -119,6 +119,32 @@ app.post('/api/login', (req, res) => {
     }
 });
 
+// API: Resolve a user's unique switch link by their name or WMS login
+app.post('/api/user-link', async (req, res) => {
+    const name = typeof req.body.name === 'string' ? req.body.name.trim() : '';
+    if (!name) {
+        return res.status(400).json({ error: 'Podaj nazwę użytkownika.' });
+    }
+
+    try {
+        const [users] = await db.query(
+            'SELECT id FROM users WHERE deleted = 0 AND (LOWER(TRIM(name)) = LOWER(?) OR LOWER(TRIM(given_name)) = LOWER(?)) LIMIT 2',
+            [name, name]
+        );
+
+        if (users.length === 0) {
+            return res.status(404).json({ error: 'Nie znaleziono użytkownika o podanej nazwie.' });
+        }
+        if (users.length > 1) {
+            return res.status(409).json({ error: 'Ta nazwa pasuje do kilku użytkowników. Użyj unikalnego loginu WMS.' });
+        }
+
+        res.json({ id: users[0].id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // API: Admin Login
 app.post('/api/admin-login', (req, res) => {
     const { password } = req.body;
