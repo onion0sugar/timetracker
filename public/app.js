@@ -300,7 +300,9 @@ function adminLogin() {
 }
 
 async function confirmLogin() {
-    const pass = document.getElementById('adminPasswordInput').value;
+    const pass = document.getElementById('adminPasswordInput').value.trim();
+    if (!pass) return;
+
     try {
         const response = await fetch('/api/admin-login', {
             method: 'POST',
@@ -315,9 +317,26 @@ async function confirmLogin() {
             sessionStorage.setItem('adminPassword', pass);
             closeAdminModal();
             updateAdminUI();
-        } else {
-            alert("Błędne hasło administratora!");
+            return;
         }
+
+        // Check if user entered their WMS login
+        const userCheck = await fetch('/api/user-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
+        });
+
+        if (userCheck.ok) {
+            const userData = await userCheck.json();
+            if (userData && userData.user && userData.user.id) {
+                sessionStorage.setItem('userAuth_' + userData.user.id, 'true');
+                window.location.href = `/user.html?id=${userData.user.id}`;
+                return;
+            }
+        }
+
+        alert("Błędne hasło administratora!");
     } catch (err) {
         console.error('Login error:', err);
         alert("Błąd połączenia z serwerem");
@@ -404,7 +423,9 @@ function updateAdminUI() {
 }
 
 async function viewLogin() {
-    const pass = document.getElementById('viewPasswordInput').value;
+    const pass = document.getElementById('viewPasswordInput').value.trim();
+    if (!pass) return;
+
     try {
         // Try view password first
         let response = await fetch('/api/login', {
@@ -441,9 +462,26 @@ async function viewLogin() {
             updateViewUI();
             updateAdminUI();
             startDashboardRefresh();
-        } else {
-            alert("Błędne hasło dostępu!");
+            return;
         }
+
+        // If not view/admin password, check if it is a user's WMS login
+        const userCheck = await fetch('/api/user-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password: pass })
+        });
+
+        if (userCheck.ok) {
+            const userData = await userCheck.json();
+            if (userData && userData.user && userData.user.id) {
+                sessionStorage.setItem('userAuth_' + userData.user.id, 'true');
+                window.location.href = `/user.html?id=${userData.user.id}`;
+                return;
+            }
+        }
+
+        alert("Błędne hasło lub login WMS!");
     } catch (err) {
         console.error('Login error:', err);
         alert("Błąd połączenia z serwerem");
