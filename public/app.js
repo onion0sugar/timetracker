@@ -7,6 +7,8 @@ let isViewAuthenticated = sessionStorage.getItem('isViewAuthenticated') === 'tru
 let allUsers = [];
 let currentFilter = 'all';
 let currentSearch = '';
+let currentPage = 1;
+let pageSize = 20;
 let userToEdit = null;
 let currentStateName = null;
 let expandedUserId = null;
@@ -123,9 +125,36 @@ function renderUsers() {
         return bActive - aActive;
     });
 
+    const totalUsers = filteredUsers.length;
+
+    if (totalUsers === 0) {
+        grid.innerHTML = `
+            <div style="text-align: center; padding: 3rem 1rem; color: var(--text-dim); background: rgba(255,255,255,0.02); border-radius: 12px; margin-top: 1rem;">
+                <i class="ph ph-user-circle" style="font-size: 2.5rem; opacity: 0.5; display: block; margin-bottom: 0.5rem;"></i>
+                Nie znaleziono użytkowników spełniających kryteria.
+            </div>
+        `;
+        const paginationContainer = document.getElementById('paginationContainer');
+        if (paginationContainer) paginationContainer.style.display = 'none';
+        updateFilterUI();
+        updateAdminUI();
+        return;
+    }
+
+    // Pagination calculations
+    const effectivePageSize = pageSize === 'all' ? totalUsers : parseInt(pageSize, 10);
+    const totalPages = Math.max(1, Math.ceil(totalUsers / effectivePageSize));
+
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+
+    const startIndex = (currentPage - 1) * effectivePageSize;
+    const endIndex = Math.min(startIndex + effectivePageSize, totalUsers);
+    const pagedUsers = filteredUsers.slice(startIndex, endIndex);
+
     const prevExpandedId = expandedUserId;
 
-    grid.innerHTML = filteredUsers.map(user => {
+    grid.innerHTML = pagedUsers.map(user => {
         const stateClass = getStateClass(user.current_state);
         const currentState = user.current_state || 'OFF';
         const displayName = (user.given_name && user.given_name.trim() !== '') ? user.given_name : user.name;
@@ -169,13 +198,75 @@ function renderUsers() {
         `;
     }).join('');
 
-    // Update filter buttons
+    renderPagination(totalUsers, startIndex, endIndex, totalPages);
+    updateFilterUI();
+    updateAdminUI();
+}
+
+function updateFilterUI() {
     document.querySelectorAll('.filter-btn').forEach(btn => {
         btn.classList.toggle('active', btn.getAttribute('data-filter') === currentFilter);
     });
+}
 
-    // Refresh admin visibility
-    updateAdminUI();
+function renderPagination(totalItems, startIndex, endIndex, totalPages) {
+    const container = document.getElementById('paginationContainer');
+    const info = document.getElementById('paginationInfo');
+    const controls = document.getElementById('paginationControls');
+    if (!container || !info || !controls) return;
+
+    container.style.display = 'flex';
+    info.textContent = `Wyświetlanie ${startIndex + 1}–${endIndex} z ${totalItems}`;
+
+    if (totalPages <= 1) {
+        controls.innerHTML = '';
+        return;
+    }
+
+    let buttonsHtml = '';
+
+    // Prev button
+    buttonsHtml += `<button class="pagination-btn pagination-prev" ${currentPage === 1 ? 'disabled' : ''} title="Poprzednia strona"><i class="ph ph-caret-left"></i></button>`;
+
+    // Page buttons
+    const pages = getPaginationPages(currentPage, totalPages);
+    for (const p of pages) {
+        if (p === '...') {
+            buttonsHtml += `<span class="pagination-ellipsis">…</span>`;
+        } else {
+            buttonsHtml += `<button class="pagination-btn ${p === currentPage ? 'active' : ''}" data-page="${p}">${p}</button>`;
+        }
+    }
+
+    // Next button
+    buttonsHtml += `<button class="pagination-btn pagination-next" ${currentPage === totalPages ? 'disabled' : ''} title="Następna strona"><i class="ph ph-caret-right"></i></button>`;
+
+    controls.innerHTML = buttonsHtml;
+}
+
+function getPaginationPages(current, total) {
+    if (total <= 7) {
+        const pages = [];
+        for (let i = 1; i <= total; i++) pages.push(i);
+        return pages;
+    }
+
+    if (current <= 4) {
+        return [1, 2, 3, 4, 5, '...', total];
+    }
+
+    if (current >= total - 3) {
+        return [1, '...', total - 4, total - 3, total - 2, total - 1, total];
+    }
+
+    return [1, '...', current - 1, current, current + 1, '...', total];
+}
+
+function scrollToSearch() {
+    const searchBar = document.getElementById('searchBar');
+    if (searchBar) {
+        searchBar.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
 }
 
 function toggleUserDetails(id) {
@@ -721,6 +812,7 @@ if (document.getElementById('userGrid')) {
         const btn = e.target.closest('.filter-btn');
         if (btn) {
             currentFilter = btn.getAttribute('data-filter');
+            currentPage = 1;
             renderUsers();
         }
     });
@@ -732,6 +824,7 @@ if (document.getElementById('userGrid')) {
     searchInput.addEventListener('input', () => {
         currentSearch = searchInput.value;
         searchClearBtn.classList.toggle('visible', currentSearch.length > 0);
+        currentPage = 1;
         renderUsers();
     });
 
@@ -740,8 +833,46 @@ if (document.getElementById('userGrid')) {
         searchInput.value = '';
         searchClearBtn.classList.remove('visible');
         searchInput.focus();
+        currentPage = 1;
         renderUsers();
     });
+
+    // Pagination Event Listeners
+    const paginationControls = document.getElementById('paginationControls');
+    if (paginationControls) {
+        paginationControls.addEventListener('click', (e) => {
+            const btn = e.target.closest('.pagination-btn');
+            if (!btn || btn.disabled) return;
+
+            if (btn.classList.contains('pagination-prev')) {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderUsers();
+                    scrollToSearch();
+                }
+            } else if (btn.classList.contains('pagination-next')) {
+                currentPage++;
+                renderUsers();
+                scrollToSearch();
+            } else {
+                const targetPage = parseInt(btn.getAttribute('data-page'), 10);
+                if (targetPage && targetPage !== currentPage) {
+                    currentPage = targetPage;
+                    renderUsers();
+                    scrollToSearch();
+                }
+            }
+        });
+    }
+
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    if (pageSizeSelect) {
+        pageSizeSelect.addEventListener('change', (e) => {
+            pageSize = e.target.value === 'all' ? 'all' : parseInt(e.target.value, 10);
+            currentPage = 1;
+            renderUsers();
+        });
+    }
 
     // Admin Event Listeners
     document.getElementById('adminLoginBtn').addEventListener('click', adminLogin);

@@ -58,6 +58,22 @@
         <div id="userGrid" class="user-grid">
             <!-- User cards will be loaded here -->
         </div>
+
+        <!-- Pagination Controls -->
+        <div id="paginationContainer" class="pagination-container" style="display: none;">
+            <div class="pagination-info" id="paginationInfo"></div>
+            <div class="pagination-controls" id="paginationControls"></div>
+            <div class="pagination-size">
+                <label for="pageSizeSelect">Na stronę:</label>
+                <select id="pageSizeSelect">
+                    <option value="10">10</option>
+                    <option value="20" selected>20</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="all">Wszystkich</option>
+                </select>
+            </div>
+        </div>
     </div>
     <!-- Edit/Add User Modal -->
     <div id="editModal" class="modal">

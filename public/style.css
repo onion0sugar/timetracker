@@ -877,6 +877,105 @@ body.admin-mode #adminLoginBtn {
     display: block;
 }
 
+/* ── Pagination ─────────────────────────────────────────── */
+.pagination-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding: 0.85rem 1.25rem;
+    background: rgba(12, 55, 109, 0.25);
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+}
+
+.pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    font-weight: 500;
+}
+
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.pagination-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px !important;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.85rem !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: 0.2s;
+    text-transform: none !important;
+    letter-spacing: normal !important;
+    box-shadow: none !important;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: var(--primary);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(242, 114, 0, 0.3) !important;
+}
+
+.pagination-btn.active {
+    background: var(--primary);
+    border-color: var(--primary);
+    box-shadow: 0 0 10px rgba(242, 114, 0, 0.4) !important;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.05);
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+.pagination-ellipsis {
+    color: var(--text-dim);
+    padding: 0 6px;
+    font-size: 0.85rem;
+    user-select: none;
+}
+
+.pagination-size {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+}
+
+.pagination-size select {
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.85rem;
+    cursor: pointer;
+    outline: none;
+    transition: 0.2s;
+}
+
+.pagination-size select:focus {
+    border-color: var(--primary);
+}
+
 /* ── Responsive Design ──────────────────────────────────── */
 
 /* Standard Mobile & Tablets */
@@ -916,6 +1015,12 @@ body.admin-mode #adminLoginBtn {
 
     .form-group {
         gap: 0.75rem;
+    }
+
+    .pagination-container {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
     }
 }
 
