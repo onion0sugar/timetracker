@@ -799,3 +799,153 @@ function connectSSE(onUpdate) {
         setTimeout(() => connectSSE(onUpdate), 3000);
     };
 }
+
+// --- User Switch Authentication ---
+
+function initUserSwitchPage() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+    const overlay = document.getElementById('userAccessOverlay');
+    const container = document.getElementById('userMainContainer');
+    const passInput = document.getElementById('userPasswordInput');
+    const confirmBtn = document.getElementById('confirmUserLoginBtn');
+    const logoutBtn = document.getElementById('userLogoutBtn');
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', loginUserSwitch);
+    }
+    if (passInput) {
+        passInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') loginUserSwitch();
+        });
+    }
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', logoutUserSwitch);
+    }
+
+    if (userId) {
+        // If already authenticated for this user in current session
+        if (sessionStorage.getItem('userAuth_' + userId) === 'true') {
+            if (overlay) overlay.style.display = 'none';
+            if (container) container.style.display = 'block';
+            startUserRefresh(userId);
+            return;
+        }
+
+        // Fetch user info to display friendly prompt if given_name is available
+        fetch(`/api/users/${userId}`)
+            .then(res => res.json())
+            .then(data => {
+                if (data.user) {
+                    const promptEl = document.getElementById('userLoginPrompt');
+                    if (promptEl) {
+                        const nameToShow = data.user.given_name && data.user.given_name.trim() !== ''
+                            ? data.user.given_name
+                            : null;
+                        if (nameToShow) {
+                            promptEl.textContent = `Użytkownik: ${nameToShow}. Aby kontynuować, wpisz hasło:`;
+                        }
+                    }
+                }
+            })
+            .catch(() => {});
+    }
+
+    if (overlay) overlay.style.display = 'flex';
+    if (container) container.style.display = 'none';
+    if (passInput) passInput.focus();
+}
+
+async function loginUserSwitch() {
+    const passInput = document.getElementById('userPasswordInput');
+    const errorEl = document.getElementById('userLoginError');
+    if (!passInput) return;
+
+    const password = passInput.value.trim();
+    if (!password) {
+        if (errorEl) {
+            errorEl.textContent = 'Wprowadź hasło (login WMS)';
+            errorEl.style.display = 'block';
+        }
+        return;
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id');
+
+    try {
+        const response = await fetch('/api/user-login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId: userId || undefined, password })
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+            const authedUserId = data.user.id;
+            sessionStorage.setItem('userAuth_' + authedUserId, 'true');
+            currentUserId = authedUserId;
+
+            if (!userId) {
+                const newUrl = `${window.location.pathname}?id=${authedUserId}`;
+                window.history.replaceState(null, '', newUrl);
+            }
+
+            const overlay = document.getElementById('userAccessOverlay');
+            const container = document.getElementById('userMainContainer');
+            if (overlay) overlay.style.display = 'none';
+            if (container) container.style.display = 'block';
+            if (errorEl) errorEl.style.display = 'none';
+            passInput.value = '';
+
+            startUserRefresh(authedUserId);
+        } else {
+            if (errorEl) {
+                errorEl.textContent = data.error || 'Błędne hasło (login WMS)';
+                errorEl.style.display = 'block';
+            }
+            passInput.focus();
+            passInput.select();
+        }
+    } catch (err) {
+        console.error('User switch login error:', err);
+        if (errorEl) {
+            errorEl.textContent = 'Błąd połączenia z serwerem';
+            errorEl.style.display = 'block';
+        }
+    }
+}
+
+function logoutUserSwitch() {
+    if (currentUserId) {
+        sessionStorage.removeItem('userAuth_' + currentUserId);
+    }
+    stopTimer();
+    if (window.userRefreshInterval) {
+        clearInterval(window.userRefreshInterval);
+        window.userRefreshInterval = null;
+    }
+    if (window.appSSE) {
+        window.appSSE.close();
+        window.appSSE = null;
+    }
+
+    const overlay = document.getElementById('userAccessOverlay');
+    const container = document.getElementById('userMainContainer');
+    if (container) container.style.display = 'none';
+    if (overlay) overlay.style.display = 'flex';
+
+    const passInput = document.getElementById('userPasswordInput');
+    const errorEl = document.getElementById('userLoginError');
+    if (errorEl) errorEl.style.display = 'none';
+    if (passInput) {
+        passInput.value = '';
+        passInput.focus();
+    }
+}
+
+// Initial load for User Switch Page
+if (document.getElementById('userAccessOverlay')) {
+    initUserSwitchPage();
+}

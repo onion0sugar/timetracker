@@ -39,9 +39,9 @@ Every state-changing endpoint calls `broadcastUpdate({...})`, which writes an SS
 
 ### Auth
 
-Two shared passwords, no per-user accounts:
 - `VIEW_PASSWORD` — gates the dashboard behind a login overlay; stored in `sessionStorage.isViewAuthenticated`.
 - `ADMIN_PASSWORD` — required in the JSON body of every mutating admin endpoint (create/update/delete user). Frontend stashes it in `sessionStorage.adminPassword` after admin login and replays it on each call. There is no session token — the password is the credential on every request.
+- User Switch access (`/user.html`) — gated behind a login overlay; the user enters their WMS login (`users.name`, case-insensitive) in place of the password (verified via `POST /api/user-login`, also accepts `ADMIN_PASSWORD`). Stored in `sessionStorage.userAuth_<userId>`.
 
 ### Frontend
 

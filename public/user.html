@@ -10,12 +10,26 @@
 </head>
 
 <body>
-      <div class="container switch-view">
+      <!-- User Switch Access Login Overlay -->
+      <div id="userAccessOverlay" class="access-overlay">
+            <div class="modal-content">
+                  <h2 style="margin-bottom: 0.5rem;">Dostęp do Przełącznika</h2>
+                  <p id="userLoginPrompt" style="margin-bottom: 1rem; opacity: 0.8;">Aby kontynuować, podaj hasło dostępu:</p>
+                  <input type="password" id="userPasswordInput" placeholder="Hasło..." autocomplete="current-password">
+                  <div id="userLoginError" style="color: #eb4d4b; font-size: 0.9rem; margin-top: -0.75rem; margin-bottom: 1rem; display: none;"></div>
+                  <button id="confirmUserLoginBtn" style="width: 100%;">Wejdź</button>
+            </div>
+      </div>
+
+      <div id="userMainContainer" class="container switch-view" style="display: none;">
             <header>
                   <div class="brand-header">
                         <span class="brand-timetracker">TimeTracker</span>
                   </div>
-                  <h2 id="userNameHeading" style="margin: 0; color: var(--text-dim); font-size: 1.1rem;">Ładowanie...</h2>
+                  <div style="display: flex; align-items: center; gap: 1rem;">
+                        <h2 id="userNameHeading" style="margin: 0; color: var(--text-dim); font-size: 1.1rem;">Ładowanie...</h2>
+                        <button id="userLogoutBtn" class="btn-secondary btn-danger-soft" style="padding: 6px 14px; font-size: 0.8rem; border-radius: 8px; cursor: pointer;">Wyloguj</button>
+                  </div>
             </header>
 
             <div class="switch-container">
@@ -57,16 +71,6 @@
       <div id="sse-status">Połączenie utracone - próba odnowienia...</div>
 
       <script src="app.js"></script>
-      <script>
-            // Specific logic for user.html
-            window.addEventListener('load', () => {
-                  const urlParams = new URLSearchParams(window.location.search);
-                  const userId = urlParams.get('id');
-                  if (userId) {
-                        startUserRefresh(userId);
-                  }
-            });
-      </script>
 </body>
 
 </html>

@@ -129,6 +129,60 @@ app.post('/api/admin-login', (req, res) => {
     }
 });
 
+// API: User Switch Login (password is user's WMS login or ADMIN_PASSWORD)
+app.post('/api/user-login', async (req, res) => {
+    const { userId, password } = req.body;
+    if (!password) {
+        return res.status(400).json({ error: 'Wprowadź hasło' });
+    }
+
+    try {
+        let user;
+        const trimmedPass = String(password).trim();
+        const lowerPass = trimmedPass.toLowerCase();
+
+        if (userId) {
+            const [users] = await db.query(
+                'SELECT id, name, given_name, deleted FROM users WHERE id = ?',
+                [userId]
+            );
+            user = users[0];
+            if (!user) {
+                return res.status(404).json({ error: 'Użytkownik nie istnieje' });
+            }
+            if (user.deleted) {
+                return res.status(403).json({ error: 'Użytkownik został usunięty' });
+            }
+
+            const wmsLogin = (user.name || '').trim().toLowerCase();
+            if (lowerPass !== wmsLogin && trimmedPass !== ADMIN_PASSWORD) {
+                return res.status(401).json({ error: 'Błędne hasło' });
+            }
+        } else {
+            // Find user directly by WMS login
+            const [users] = await db.query(
+                'SELECT id, name, given_name, deleted FROM users WHERE LOWER(TRIM(name)) = ? AND deleted = 0',
+                [lowerPass]
+            );
+            user = users[0];
+            if (!user) {
+                return res.status(401).json({ error: 'Błędne hasło' });
+            }
+        }
+
+        res.json({
+            success: true,
+            user: {
+                id: user.id,
+                name: user.name,
+                givenName: user.given_name
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // API: Create User
 app.post('/api/users', async (req, res) => {
     const { name, givenName, category, excludeFromMismatchAlerts, password } = req.body;
