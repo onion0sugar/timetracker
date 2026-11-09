@@ -12,7 +12,7 @@ SELECT TOP 1000 PPP.[Id]
       ,PPP.[CreatedBy]
       ,PPP.[ModifiedBy]
       ,[DocumentId]
-  FROM [SerwisKop_Magazyn].[Package].[PackagePositions] PPP
+
   LEFT JOIN Document.Documents DD ON DD.Id = PPP.DocumentId
   LEFT JOIN Core.Users CU ON CU.Id = PPP.CreatedBy
   WHERE PPP.DateCreatedUtc >= '2026-06-30 06:00:00'
